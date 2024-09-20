@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "621130512337",
+    "project_id": "smartbuss-4e601",
+    "storage_bucket": "smartbuss-4e601.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:621130512337:android:affcc48c658706410652f0",
+        "android_client_info": {
+          "package_name": "com.example.untitled2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBG6vgzgBM4TY9dMEYhFMLndLHVrJKMd4E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
