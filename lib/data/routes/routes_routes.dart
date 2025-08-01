@@ -1,0 +1,1 @@
+export 'cultura_route.dart';

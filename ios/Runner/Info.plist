@@ -49,5 +49,15 @@
     <string>This app needs access to location when open.</string>
     <key>NSLocationAlwaysUsageDescription</key>
     <string>Access to the location is needed when in the background.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Necesitamos tu ubicación incluso cuando la app esté en segundo plano para mostrar rutas de buses en tiempo real.</string>
+    <!-- Permiso para descubrir servicios en red local (DevTools, depuración) -->
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Permitir el acceso a la red local para depuración de Flutter DevTools y comunicación de la VM.</string>
+    <!-- Servicio Bonjour para el DevTools de Dart VM -->
+    <key>NSBonjourServices</key>
+    <array>
+      <string>_dartobservatory._tcp</string>
+    </array>
 </dict>
 </plist>
