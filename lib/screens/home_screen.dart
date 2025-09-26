@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:untitled2/screens/driver_screen.dart';
+import 'package:untitled2/screens/user/user_main_screen.dart';
 import 'package:untitled2/screens/user_screen.dart';
 import 'package:untitled2/services/auth_service.dart';
 import '../models/user_model.dart';
@@ -71,7 +72,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ? const Center(child: Text('No se pudo cargar los detalles del usuario.'))
           : _userModel!.role == 'Conductor'
           ? DriverScreen() // Pantalla para conductores
-          : UserMapScreen(), // Pantalla para usuarios
+          :UserMainScreen(),
+      //     : UserMapScreen(), // Pantalla para usuarios
     );
   }
 }
