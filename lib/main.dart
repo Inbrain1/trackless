@@ -1,14 +1,14 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:untitled2/screens/auth/check_auth_screen.dart';
-import 'package:untitled2/screens/auth/login_screen.dart';
-import 'package:untitled2/screens/auth/register_screen.dart';
+import 'package:untitled2/features/1_auth/presentation/screens/splash_screen.dart';
+import 'package:untitled2/features/1_auth/presentation/screens/login_screen.dart';
+import 'package:untitled2/features/1_auth/presentation/screens/register_screen.dart';
 import 'package:untitled2/screens/home_screen.dart';
-import 'package:untitled2/screens/welcome_screen.dart';
+import 'package:untitled2/features/1_auth/presentation/screens/welcome_screen.dart';
 import 'package:untitled2/services/auth_service.dart';
 import 'package:untitled2/services/notifications_service.dart';
-import 'package:untitled2/widgets/driver_map_screen.dart';
+import 'package:untitled2/features/2_map_view/presentation/screens/driver_map_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:untitled2/screens/driver_screen.dart';
+import 'package:untitled2/features/4_driver_panel/presentation/screens/bus_selection_screen.dart';
 import 'package:untitled2/screens/user/user_main_screen.dart';
-import 'package:untitled2/screens/user_screen.dart';
+import 'package:untitled2/features/2_map_view/presentation/screens/user_map_screen.dart';
 import 'package:untitled2/services/auth_service.dart';
-import '../models/user_model.dart';
+import '../features/1_auth/data/models/user_model.dart';
 
 class HomeScreen extends StatefulWidget {
   @override

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'navigation/main_screen.dart';
+import '../../features/3_shell_navigation/presentation/screens/main_shell_screen.dart';
 
 class UserMainScreen extends StatelessWidget {
   const UserMainScreen({super.key});
