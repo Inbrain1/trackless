@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../data/bus_names.dart'; // Importa la lista de buses
+import '../../../../delete/data/bus_names.dart'; // Importa la lista de buses
 
 class DraggableSheet extends StatefulWidget {
   final Function(String busName) onBusSelected;

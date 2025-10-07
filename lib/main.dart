@@ -1,49 +1,21 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:untitled2/features/1_auth/presentation/screens/splash_screen.dart';
-import 'package:untitled2/features/1_auth/presentation/screens/login_screen.dart';
-import 'package:untitled2/features/1_auth/presentation/screens/register_screen.dart';
-import 'package:untitled2/screens/home_screen.dart';
-import 'package:untitled2/features/1_auth/presentation/screens/welcome_screen.dart';
-import 'package:untitled2/services/auth_service.dart';
-import 'package:untitled2/services/notifications_service.dart';
-import 'package:untitled2/features/2_map_view/presentation/screens/driver_map_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:untitled2/app.dart';
+import 'package:untitled2/core/di/service_locator.dart';
+import 'firebase_options.dart';
 
 void main() async {
+  // 1. Asegurarse de que los bindings de Flutter estén inicializados
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(AppState());
-}
 
-class AppState extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthService()),
-      ],
-      child: MyApp(), // Asegúrate de envolver `MyApp` aquí
-    );
-  }
-}
+  // 2. Inicializar Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      routes: {
-        '/':(context)=> CheckAuthScreen(),
-        '/welcome':(context)=> WelcomeScreen(),
-        '/login': (context) => LoginScreen(),
-        '/register': (context) => RegisterScreen(),
-        '/home': (context) => HomeScreen(),
-        'driverMap': (context) => DriverMapScreen(),
-      },
-      scaffoldMessengerKey: NotificationsService.messengerKey,
+  // 3. Configurar nuestro Service Locator (GetIt)
+  await setupLocator();
 
-    );
-  }
+  // 4. Correr la aplicación
+  runApp(const MyApp());
 }

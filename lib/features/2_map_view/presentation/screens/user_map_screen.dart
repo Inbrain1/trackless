@@ -1,312 +1,133 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:untitled2/services/directions_service.dart';
-import '../../../../core/helpers/ai_handler.dart';
-import '../../../../services/location_service.dart';
+import 'package:untitled2/core/di/service_locator.dart';
+import 'package:untitled2/features/2_map_view/presentation/bloc/map_bloc.dart';
+import 'package:untitled2/features/2_map_view/presentation/bloc/map_event.dart';
+import 'package:untitled2/features/2_map_view/presentation/bloc/map_state.dart';
 import '../widgets/bus_selection_sheet.dart';
-import '../../../../services/bus_location_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../../../core/helpers/marker_animation.dart';
 
-class UserMapScreen extends StatefulWidget {
+class UserMapScreen extends StatelessWidget {
+  const UserMapScreen({super.key});
+
   @override
-  _UserMapScreenState createState() => _UserMapScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<MapBloc>()..add(LoadMap()),
+      child: const _UserMapView(),
+    );
+  }
 }
 
-class _UserMapScreenState extends State<UserMapScreen> {
-  late GoogleMapController mapController;
-  Set<Marker> markers = {};
-  Set<Polyline> polylines = {};
-  final directionsService = DirectionsService();
-  final userLocationService = UserLocationService();
-  final busLocationService = BusLocationService();
-  String? selectedBusName; // Variable para almacenar el bus seleccionado
-  bool isLoadingRoute = false;
+class _UserMapView extends StatefulWidget {
+  const _UserMapView();
 
-  BitmapDescriptor? stopBusIcon;
-  bool isStopBusIconReady = false;
+  @override
+  State<_UserMapView> createState() => _UserMapViewState();
+}
 
-  double currentZoom = 14.0;
-  double previousZoom = 14.0;
-  bool markersVisible = false;
-  bool firstLoad = true;
-
-  String? lastBusLoaded;
-
-  void _setMarkers(Set<Marker> newMarkers) {
-    setState(() {
-      markers = newMarkers;
-    });
-  }
-
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-    mapController.getZoomLevel().then((zoom) {
-      setState(() {
-        currentZoom = zoom;
-      });
-    });
-  }
+class _UserMapViewState extends State<_UserMapView> {
+  GoogleMapController? _mapController;
+  BitmapDescriptor? _stopBusIcon;
 
   @override
   void initState() {
     super.initState();
+    _loadMarkerIcons();
+  }
 
-    BitmapDescriptor.fromAssetImage(
-      const ImageConfiguration(size: Size(0, 0)),
+  void _loadMarkerIcons() async {
+    _stopBusIcon = await BitmapDescriptor.fromAssetImage(
+      const ImageConfiguration(size: Size(24, 24)),
       'assets/stopbus.png',
-    ).then((icon) {
-      setState(() {
-        stopBusIcon = icon;
-        isStopBusIconReady = true;
-      });
-    });
-
-    userLocationService.checkPermissionAndGetLocation((LatLng latLng) {
-      setState(() {
-        // Actualiza el marcador de ubicación del usuario con color violeta
-        markers.removeWhere((marker) => marker.markerId.value == 'user_location');
-        markers.add(
-          Marker(
-            markerId: const MarkerId('user_location'),
-            position: latLng,
-            infoWindow: const InfoWindow(title: 'Tu ubicación'),
-            // Mantener el color original del marcador del usuario (violeta)
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
-          ),
-        );
-
-        // Mueve la cámara a la ubicación actual del usuario
-        mapController.animateCamera(CameraUpdate.newLatLng(latLng));
-      });
-    });
-  }
-
-  void _onBusSelected(String busName) async {
-    if (selectedBusName == busName) {
-      // Si el bus seleccionado es el mismo, lo deseleccionamos
-      setState(() {
-        selectedBusName = null;
-        lastBusLoaded = null;
-        lastStopCoords.clear();
-        markers.clear();
-        polylines.clear();
-        markers.removeWhere((m) =>
-        m.markerId.value.startsWith('checkpoint_') ||
-            m.markerId.value.contains(busName));
-      });
-      return;
-    }
-
-    setState(() {
-      isLoadingRoute = true;
-    });
-
-    // Primero limpiamos los marcadores de la ruta anterior
-    markers.clear();
-
-    // Cargar la nueva ruta y ubicaciones del bus
-    await _loadBusRoute(busName);
-    await _loadBusLocations(busName);
-
-    setState(() {
-      isLoadingRoute = false;
-      selectedBusName = busName;
-    });
-  }
-
-  List<LatLng> lastStopCoords = [];
-
-  Future<void> _loadBusRoute(String busName) async {
-    if (!isStopBusIconReady) {
-      print("Ícono de paradero no cargado aún");
-      return;
-    }
-
-    if (busName == lastBusLoaded && lastStopCoords.isNotEmpty) {
-      print("Ruta $busName ya está cargada. Usando datos en caché.");
-      await MarkerAnimationService.animateAddMarkers(
-        markers: markers,
-        setMarkers: _setMarkers,
-        stopCoords: lastStopCoords,
-        busName: busName,
-        icon: stopBusIcon,
-        currentZoom: currentZoom,
-        animate: false,
-      );
-      return;
-    }
-
-    print("Cargando ruta para $busName");
-
-    setState(() {
-      selectedBusName = busName;
-      polylines.clear();
-      markers.removeWhere((m) => m.markerId.value.startsWith('checkpoint_'));
-    });
-
-    final doc = await FirebaseFirestore.instance.collection('busRoutes').doc(busName).get();
-
-    if (!doc.exists) {
-      print("Ruta no encontrada para $busName");
-      return;
-    }
-
-    final data = doc.data();
-    final List<dynamic> routeData = data?['route'] ?? [];
-    final List<dynamic> stopData = data?['stops'] ?? [];
-
-    // Ruta detallada
-    final List<LatLng> routeCoords = routeData
-        .map((point) => LatLng(point['lat'] as double, point['lng'] as double))
-        .toList();
-
-    // Paraderos reales
-    final List<LatLng> stopCoords = stopData
-        .map((point) => LatLng(point['lat'] as double, point['lng'] as double))
-        .toList();
-
-    print("Total paraderos: ${stopCoords.length}");
-    print("Total puntos de ruta: ${routeCoords.length}");
-
-    setState(() {
-      // Dibuja la línea
-      polylines.add(
-        Polyline(
-          polylineId: PolylineId(busName),
-          color: Colors.blue,
-          width: 4,
-          points: routeCoords,
-        ),
-      );
-      // Guarda los paraderos para uso posterior
-      lastStopCoords = stopCoords;
-    });
-
-    await MarkerAnimationService.animateAddMarkers(
-      markers: markers,
-      setMarkers: _setMarkers,
-      stopCoords: stopCoords,
-      busName: busName,
-      icon: stopBusIcon,
-      currentZoom: currentZoom,
-      animate: !firstLoad,
     );
-    firstLoad = false;
-    markersVisible = currentZoom >= 16.0;
-    previousZoom = currentZoom;
-    lastBusLoaded = busName;
-  }
-
-  Future<void> _loadBusLocations(String busName) async {
-    print("Cargando ubicaciones en tiempo real para $busName");
-
-    // Escuchar cambios en la ubicación de los conductores de ese bus
-    FirebaseFirestore.instance
-        .collection('users')
-        .where('busName', isEqualTo: busName)
-        .snapshots()
-        .listen((snapshot) {
-      if (snapshot.docs.isNotEmpty) {
-        // Actualizar los marcadores con los conductores y sus ubicaciones
-        snapshot.docs.forEach((doc) {
-          double latitude = doc['latitude'];
-          double longitude = doc['longitude'];
-
-          // Asignar un icono diferente para cada ruta de bus
-          BitmapDescriptor icon = _getBusIcon(busName);
-
-          markers.add(
-            Marker(
-              markerId: MarkerId(doc.id),
-              position: LatLng(latitude, longitude),
-              infoWindow: InfoWindow(title: busName),
-              icon: icon,
-            ),
-          );
-        });
-      }
-      setState(() {});
-    });
-  }
-
-  // Método para obtener el icono del bus según la ruta
-  BitmapDescriptor _getBusIcon(String busName) {
-    if (busName == "Patron de San Jerónimo") {
-      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue);
-    } else if (busName == "Satélite") {
-      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
-    } else if (busName == "Saylla Tipon Oropesa") {
-      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
-    } else {
-      // Valor predeterminado
-      return BitmapDescriptor.defaultMarker;
-    }
-  }
-
-  @override
-  void dispose() {
-    userLocationService.dispose();
-    super.dispose();
+    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text('Seleccionar Ruta de Bus'),
-        leading :IconButton(
-          icon: const Icon(FontAwesomeIcons.robot),
-          onPressed: () {
-            AIHandler.showAIAlertDialog(context);
-          },
-        ),
-      ),
-      body: Stack(
-        children: [
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(37.7749, -122.4194), // Coordenadas iniciales
-              zoom: 14.0,
-            ),
-            markers: markers,
-            polylines: polylines,
-            onCameraMove: (position) {
-              currentZoom = position.zoom;
-            },
-            onCameraIdle: () {
-              if (selectedBusName != null && lastStopCoords.isNotEmpty) {
-                if ((previousZoom < 16.0 && currentZoom >= 16.0) ||
-                    (previousZoom >= 16.0 && currentZoom < 16.0)) {
-                  MarkerAnimationService.animateAddMarkers(
-                    markers: markers,
-                    setMarkers: _setMarkers,
-                    stopCoords: lastStopCoords,
-                    busName: selectedBusName!,
-                    icon: stopBusIcon,
-                    currentZoom: currentZoom,
-                    animate: true,
-                  );
-                  markersVisible = currentZoom >= 16.0;
-                  previousZoom = currentZoom;
-                }
-              }
-            },
-          ),
-          DraggableSheet(onBusSelected: _onBusSelected, selectedBusName: selectedBusName), // DraggableSheet para seleccionar bus
-          if (isLoadingRoute)
-            Positioned.fill(
-              child: Container(
-                color: Colors.black45,
-                child: const Center(
-                  child: CircularProgressIndicator(),
+      body: BlocConsumer<MapBloc, MapState>(
+        listener: (context, state) {
+          if (state.status == MapStatus.error) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error: ${state.errorMessage}')),
+            );
+          }
+          // Animar cámara a la ubicación del usuario la primera vez que se obtiene
+          if (state.userLocation != null && _mapController != null) {
+            _mapController!.animateCamera(CameraUpdate.newLatLng(state.userLocation!));
+          }
+        },
+        builder: (context, state) {
+          final Set<Marker> markers = {};
+          final Set<Polyline> polylines = {};
+
+          // Añadir marcador de usuario
+          if (state.userLocation != null) {
+            markers.add(Marker(
+              markerId: const MarkerId('user_location'),
+              position: state.userLocation!,
+              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
+              infoWindow: const InfoWindow(title: 'Tu Ubicación'),
+            ));
+          }
+
+          // Añadir polilínea y paradas de la ruta seleccionada
+          if (state.selectedBusRoute != null && _stopBusIcon != null) {
+            polylines.add(Polyline(
+              polylineId: PolylineId(state.selectedBusRoute!.name),
+              color: Colors.blue,
+              width: 5,
+              points: state.selectedBusRoute!.routePoints,
+            ));
+            for (var i = 0; i < state.selectedBusRoute!.stops.length; i++) {
+              markers.add(Marker(
+                markerId: MarkerId('stop_${state.selectedBusRoute!.name}_$i'),
+                position: state.selectedBusRoute!.stops[i],
+                icon: _stopBusIcon!,
+                infoWindow: InfoWindow(title: 'Parada ${i + 1}'),
+              ));
+            }
+          }
+
+          // Añadir marcadores de buses en tiempo real
+          for (final busLocation in state.busLocations) {
+            markers.add(Marker(
+              markerId: MarkerId(busLocation.driverId),
+              position: busLocation.position,
+              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+              infoWindow: InfoWindow(title: busLocation.busName),
+            ));
+          }
+
+          return Stack(
+            children: [
+              GoogleMap(
+                onMapCreated: (controller) => _mapController = controller,
+                initialCameraPosition: const CameraPosition(
+                  target: LatLng(-13.52264, -71.96226), // Cusco por defecto
+                  zoom: 14,
                 ),
+                markers: markers,
+                polylines: polylines,
+                myLocationButtonEnabled: true,
+                myLocationEnabled: false,
               ),
-            ),
-        ],
+              DraggableSheet(
+                onBusSelected: (busName) {
+                  context.read<MapBloc>().add(BusRouteSelected(busName));
+                },
+                selectedBusName: state.selectedBusName,
+              ),
+              if (state.status == MapStatus.loading)
+                Container(
+                  color: Colors.black.withOpacity(0.3),
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+            ],
+          );
+        },
       ),
     );
   }

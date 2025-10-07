@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class WelcomeScreen extends StatelessWidget {
   @override
@@ -13,7 +14,8 @@ class WelcomeScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 20.0),
               child: Image.asset(
-                'assets/logo.jpg', // Cambia esto por tu imagen o logo de SmartBus
+                'assets/logo.jpg',
+                // Cambia esto por tu imagen o logo de SmartBus
                 height: 120,
               ),
             ),
@@ -40,14 +42,15 @@ class WelcomeScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 // Navega a la siguiente pantalla (por ejemplo, pantalla de login)
-                Navigator.pushNamed(context, '/login');
+                context.go('/login');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey, // Color gris del botón
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,

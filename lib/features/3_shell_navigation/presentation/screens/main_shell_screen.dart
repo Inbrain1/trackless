@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../2_map_view/presentation/screens/user_map_screen.dart';
 import 'home_tab.dart';
-import '../../../../screens/user/navigation/map_screen.dart';
 import 'bus_list_tab.dart';
 import 'services_tab.dart';
 
