@@ -114,17 +114,6 @@ class _UserMapViewState extends State<_UserMapView> {
                 myLocationButtonEnabled: true,
                 myLocationEnabled: false,
               ),
-              DraggableSheet(
-                onBusSelected: (busName) {
-                  context.read<MapBloc>().add(BusRouteSelected(busName));
-                },
-                selectedBusName: state.selectedBusName,
-              ),
-              if (state.status == MapStatus.loading)
-                Container(
-                  color: Colors.black.withOpacity(0.3),
-                  child: const Center(child: CircularProgressIndicator()),
-                ),
             ],
           );
         },
