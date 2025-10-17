@@ -31,21 +31,21 @@ Future<void> setupLocator() async {
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
-        () => AuthRepositoryImpl(remoteDataSource: sl()),
+    () => AuthRepositoryImpl(remoteDataSource: sl()),
   );
 
   // DataSources
   sl.registerLazySingleton<AuthRemoteDataSource>(
-        () => AuthRemoteDataSourceImpl(firebaseAuth: sl(), firestore: sl()),
+    () => AuthRemoteDataSourceImpl(firebaseAuth: sl(), firestore: sl()),
   );
 
   // --- DRIVER PANEL FEATURE ---
 
   // BLoC
   sl.registerFactory(() => BusSelectionBloc(
-    getBusListUseCase: sl(),
-    selectBusUseCase: sl(),
-  ));
+        getBusListUseCase: sl(),
+        selectBusUseCase: sl(),
+      ));
 
   // UseCases
   sl.registerLazySingleton(() => GetBusListUseCase(sl()));
@@ -53,22 +53,23 @@ Future<void> setupLocator() async {
 
   // Repositories
   sl.registerLazySingleton<DriverPanelRepository>(
-        () => DriverPanelRepositoryImpl(dataSource: sl()),
+    () => DriverPanelRepositoryImpl(dataSource: sl()),
   );
 
   // DataSources
   sl.registerLazySingleton<DriverPanelDataSource>(
-        () => DriverPanelDataSourceImpl(firestore: sl(), firebaseAuth: sl()),
+    () => DriverPanelDataSourceImpl(firestore: sl(), firebaseAuth: sl()),
   );
 
   // --- MAP VIEW FEATURE ---
 
   // BLoC
   sl.registerFactory(() => MapBloc(
-    getBusRouteDetails: sl(),
-    watchBusLocations: sl(),
-    mapRepository: sl(),
-  ));
+        getBusRouteDetails: sl(),
+        watchBusLocations: sl(),
+        mapRepository: sl(),
+        updateUserLocation: sl(),
+      ));
 
   // UseCases
   sl.registerLazySingleton(() => GetBusRouteDetailsUseCase(sl()));
@@ -77,12 +78,12 @@ Future<void> setupLocator() async {
 
   // Repositories
   sl.registerLazySingleton<MapRepository>(
-        () => MapRepositoryImpl(remoteDataSource: sl(), locationDataSource: sl()),
+    () => MapRepositoryImpl(remoteDataSource: sl(), locationDataSource: sl()),
   );
 
   // DataSources
   sl.registerLazySingleton<MapRemoteDataSource>(
-        () => MapRemoteDataSourceImpl(firestore: sl(), firebaseAuth: sl()),
+    () => MapRemoteDataSourceImpl(firestore: sl(), firebaseAuth: sl()),
   );
   sl.registerLazySingleton<LocationDataSource>(() => LocationDataSourceImpl());
 

@@ -1,8 +1,11 @@
-// lib/screens/home_screen.dart
+// lib/features/3_shell_navigation/presentation/screens/home_tab.dart
 
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // Import BLoC
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:untitled2/features/1_auth/presentation/bloc/auth_bloc.dart'; // Import AuthBloc
+import 'package:untitled2/features/1_auth/presentation/bloc/auth_event.dart'; // Import AuthEvent
 
 // DEFINIMOS LA PALETA DE COLORES EXACTA DE TU DISEÑO
 const Color azulPrincipal = Color(0xFF007BFF); // Azul brillante y moderno
@@ -19,10 +22,8 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
-  // Variable para controlar el punto activo del carrusel
   int _currentCarouselIndex = 0;
 
-  // Lista de imágenes para el carrusel
   final List<Map<String, String>> carouselItems = [
     {
       'imageUrl':
@@ -53,11 +54,23 @@ class _HomeTabState extends State<HomeTab> {
           padding: EdgeInsets.all(8.0),
           child: FaIcon(FontAwesomeIcons.busSimple, color: azulPrincipal),
         ),
+        // --- BOTÓN DE LOGOUT AÑADIDO AQUÍ ---
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: textoPrincipal), // Icono de logout
+            tooltip: 'Cerrar Sesión', // Texto de ayuda
+            onPressed: () {
+              // Obtenemos el AuthBloc del contexto
+              context.read<AuthBloc>().add(SignOutRequested());
+              // El AppRouter se encargará de la redirección
+            },
+          ),
+        ],
+        // --- FIN DEL BOTÓN DE LOGOUT ---
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.only(bottom: 40),
-          // FIX: Se envuelve la lista de widgets en un Column, que es el 'child' del Padding.
           child: Column(
             children: [
               _buildWelcomeSection(),
@@ -72,7 +85,7 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  // --- SECCIÓN 1: BIENVENIDA Y CUADRÍCULA DE CARACTERÍSTICAS ---
+  // --- SECCIÓN 1: BIENVENIDA ---
   Widget _buildWelcomeSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -93,7 +106,6 @@ class _HomeTabState extends State<HomeTab> {
             style: TextStyle(color: textoSecundario, fontSize: 16, height: 1.5),
           ),
           const SizedBox(height: 24),
-          // Cuadrícula de características
           GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
@@ -110,17 +122,17 @@ class _HomeTabState extends State<HomeTab> {
               _buildFeatureCard(
                 icon: FontAwesomeIcons.route,
                 title: 'Planifica Rutas',
-                subtitle: 'Encuentra el mejor camino a tu destino',
+                subtitle: 'Encuentra el mejor camino',
               ),
               _buildFeatureCard(
                 icon: FontAwesomeIcons.store,
                 title: 'Negocios Cercanos',
-                subtitle: 'Descubre nuevos establecimientos',
+                subtitle: 'Descubre establecimientos',
               ),
               _buildFeatureCard(
                 icon: FontAwesomeIcons.solidStar,
                 title: 'Calificaciones',
-                subtitle: 'Evalúa y encuentra los mejores lugares',
+                subtitle: 'Evalúa los mejores lugares',
               ),
             ],
           ),
@@ -142,7 +154,6 @@ class _HomeTabState extends State<HomeTab> {
         border: Border.all(color: Colors.grey.withOpacity(0.2)),
       ),
       child: SingleChildScrollView(
-        // Soluciona el error de BOTTOM OVERFLOW
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -174,7 +185,7 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  // --- SECCIÓN 2: CARRUSEL DE IMÁGENES ---
+  // --- SECCIÓN 2: CARRUSEL ---
   Widget _buildCarousel() {
     return Column(
       children: [
@@ -203,7 +214,6 @@ class _HomeTabState extends State<HomeTab> {
           ),
         ),
         const SizedBox(height: 10),
-        // Puntos indicadores del carrusel
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(carouselItems.length, (index) {
@@ -260,7 +270,7 @@ class _HomeTabState extends State<HomeTab> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   color: textoPrincipal,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -270,7 +280,7 @@ class _HomeTabState extends State<HomeTab> {
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: const TextStyle(
+                style: TextStyle(
                   color: textoSecundario,
                   fontSize: 15,
                   shadows: [Shadow(blurRadius: 5.0, color: Colors.black54)],
@@ -299,7 +309,6 @@ class _HomeTabState extends State<HomeTab> {
             ),
           ),
           const SizedBox(height: 20),
-          // Lista de tarjetas de negocios
           _buildBusinessCard(
             imageUrl:
             'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=400&q=80',
@@ -352,7 +361,6 @@ class _HomeTabState extends State<HomeTab> {
               width: 80,
               height: 80,
               fit: BoxFit.cover,
-              // Previene el error de RIGHT OVERFLOW si la imagen no carga
               errorBuilder: (context, error, stackTrace) {
                 return Container(
                   width: 80,

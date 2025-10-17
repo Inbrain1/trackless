@@ -36,4 +36,17 @@ class MapRepositoryImpl implements MapRepository {
   Future<void> updateUserLocation(LatLng position) {
     return remoteDataSource.updateUserLocation(position);
   }
+
+  @override
+  Future<void> stopSharingLocation() {
+    return remoteDataSource.stopSharingLocation();
+  }
+
+  // --- NUEVO MÉTODO IMPLEMENTADO ---
+  @override
+  Stream<List<BusLocation>> watchAllActiveBuses() {
+    return remoteDataSource
+        .watchAllActiveBuses()
+        .map((models) => models.map((model) => model.toEntity()).toList());
+  }
 }

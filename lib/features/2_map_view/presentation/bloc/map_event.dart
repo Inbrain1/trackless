@@ -19,8 +19,6 @@ class BusRouteSelected extends MapEvent {
   List<Object?> get props => [busName];
 }
 
-// --- CORRECCIÓN: Se quitó el guion bajo '_' ---
-// Ahora la clase es 'UserLocationUpdated' y es pública.
 class UserLocationUpdated extends MapEvent {
   final LatLng position;
   const UserLocationUpdated(this.position);
@@ -29,12 +27,23 @@ class UserLocationUpdated extends MapEvent {
   List<Object?> get props => [position];
 }
 
-// --- CORRECCIÓN: Se quitó el guion bajo '_' ---
-// Ahora la clase es 'BusLocationsUpdated' y es pública.
 class BusLocationsUpdated extends MapEvent {
   final List<BusLocation> busLocations;
   const BusLocationsUpdated(this.busLocations);
 
   @override
   List<Object?> get props => [busLocations];
+}
+
+class StartGpsTracking extends MapEvent {}
+
+class StopGpsTracking extends MapEvent {}
+
+// --- CORRECTION: Event name made public ---
+class ActiveBusesUpdated extends MapEvent { // Removed underscore
+  final List<BusLocation> activeBuses;
+  const ActiveBusesUpdated(this.activeBuses); // Removed underscore
+
+  @override
+  List<Object?> get props => [activeBuses];
 }

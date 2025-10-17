@@ -28,11 +28,12 @@ class LocationDataSourceImpl implements LocationDataSource {
       throw Exception('Los permisos de ubicación están permanentemente denegados.');
     }
 
-    // Cuando los permisos son correctos, empezamos a emitir la ubicación.
+    // --- MODIFICACIÓN CLAVE ---
+    // Ajustamos la configuración para obtener actualizaciones más frecuentes.
     yield* Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10, // Notificar cada 10 metros de cambio
+        accuracy: LocationAccuracy.high, // Máxima precisión
+        distanceFilter: 0, // Notificar en cada mínimo cambio (ideal para 'cada segundo')
       ),
     ).map((position) => LatLng(position.latitude, position.longitude));
   }

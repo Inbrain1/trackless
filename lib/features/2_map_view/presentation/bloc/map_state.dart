@@ -9,9 +9,11 @@ class MapState extends Equatable {
   final MapStatus status;
   final LatLng? userLocation;
   final BusRoute? selectedBusRoute;
-  final List<BusLocation> busLocations;
+  final List<BusLocation> busLocations; // Ubicaciones del bus SELECCIONADO
   final String? selectedBusName;
   final String errorMessage;
+  final bool isTracking; // Para el conductor: ¿Está transmitiendo?
+  final List<BusLocation> activeBuses; // Para el usuario: Lista de TODOS los buses activos
 
   const MapState({
     this.status = MapStatus.initial,
@@ -20,6 +22,8 @@ class MapState extends Equatable {
     this.busLocations = const [],
     this.selectedBusName,
     this.errorMessage = '',
+    this.isTracking = false,
+    this.activeBuses = const [], // <-- VALOR INICIAL
   });
 
   MapState copyWith({
@@ -29,7 +33,9 @@ class MapState extends Equatable {
     List<BusLocation>? busLocations,
     String? selectedBusName,
     String? errorMessage,
-    bool clearSelectedBus = false, // Flag para limpiar la selección
+    bool? isTracking,
+    List<BusLocation>? activeBuses, // <-- NUEVO
+    bool clearSelectedBus = false,
   }) {
     return MapState(
       status: status ?? this.status,
@@ -38,6 +44,8 @@ class MapState extends Equatable {
       busLocations: clearSelectedBus ? [] : busLocations ?? this.busLocations,
       selectedBusName: clearSelectedBus ? null : selectedBusName ?? this.selectedBusName,
       errorMessage: errorMessage ?? this.errorMessage,
+      isTracking: isTracking ?? this.isTracking,
+      activeBuses: activeBuses ?? this.activeBuses, // <-- NUEVO
     );
   }
 
@@ -49,5 +57,7 @@ class MapState extends Equatable {
     busLocations,
     selectedBusName,
     errorMessage,
+    isTracking,
+    activeBuses, // <-- NUEVO
   ];
 }
