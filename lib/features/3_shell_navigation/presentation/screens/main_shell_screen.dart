@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart'; // Import BLoC
-import 'package:untitled2/core/di/service_locator.dart'; // Import GetIt
-import 'package:untitled2/features/2_map_view/presentation/bloc/map_bloc.dart'; // Import MapBloc
-import 'package:untitled2/features/2_map_view/presentation/bloc/map_event.dart'; // Import MapEvent
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_nav_bar/google_nav_bar.dart'; // Importa el paquete GNav
+import 'package:untitled2/core/di/service_locator.dart';
+import 'package:untitled2/features/2_map_view/presentation/bloc/map_bloc.dart';
+import 'package:untitled2/features/2_map_view/presentation/bloc/map_event.dart';
 import '../../../2_map_view/presentation/screens/user_map_screen.dart';
 import 'home_tab.dart';
 import 'bus_list_tab.dart';
@@ -17,12 +18,10 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  // --- CORRECCIÓN: Definimos las pestañas directamente ---
-  // Ya no necesitan BlocProvider individual si lo ponemos aquí
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeTab(),
-    const UserMapScreen(), // Quitamos el BlocProvider de aquí
-    const BusListScreen(), // Esta ya no tenía BlocProvider
+    const UserMapScreen(),
+    const BusListScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -33,29 +32,67 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // --- CORRECCIÓN: Proporcionamos el MapBloc aquí ---
     return BlocProvider(
-      create: (_) => sl<MapBloc>()..add(LoadMap()), // Creamos el BLoC usando GetIt y cargamos el mapa
+      create: (_) => sl<MapBloc>()..add(LoadMap()),
       child: Scaffold(
-        body: Center(
-          // Usamos IndexedStack para mantener el estado de las pestañas
-          child: IndexedStack(
-            index: _selectedIndex,
-            children: _widgetOptions,
-          ),
+        extendBody: true, // Mantenemos esto
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: _widgetOptions,
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Inicio'),
-            BottomNavigationBarItem(icon: Icon(Icons.map_outlined), label: 'Mapa'),
-            BottomNavigationBarItem(icon: Icon(Icons.directions_bus_outlined), label: 'Buses'),
-          ],
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: Colors.blue, // Puedes ajustar el color
-          unselectedItemColor: Colors.grey,
-          showUnselectedLabels: true,
+        bottomNavigationBar: SafeArea( // SafeArea afuera
+          child: Padding(
+            // --- AJUSTE ---
+            // 1. Aumentar MÁS AÚN el padding vertical exterior para BAJAR la barra
+            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 0.01), // Más padding vertical (era 24)
+            // -------------
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0), // Padding interno del container
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(35), // Muy redondeado
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 15,
+                    color: Colors.black.withOpacity(.25),
+                    offset: const Offset(0, 5),
+                  )
+                ],
+              ),
+              child: ClipRRect( // ClipRRect para mantener la forma
+                borderRadius: BorderRadius.circular(30),
+                child: GNav(
+                  rippleColor: Colors.grey[800]!,
+                  hoverColor: Colors.grey[700]!,
+                  gap: 6,
+                  activeColor: Colors.white,
+                  iconSize: 32, // Icono grande
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4), // Píldora más compacta
+                  duration: const Duration(milliseconds: 300),
+                  tabBackgroundColor: Colors.grey.shade800.withOpacity(0.6),
+                  color: Colors.grey.shade400,
+                  tabs: const [
+                    GButton(
+                      icon: Icons.home,
+                      text: 'Inicio',
+                    ),
+                    GButton(
+                      icon: Icons.map,
+                      text: 'Mapa',
+                    ),
+                    GButton(
+                      icon: Icons.directions_bus,
+                      text: 'Buses',
+                    ),
+                  ],
+                  selectedIndex: _selectedIndex,
+                  onTabChange: (index) {
+                    _onItemTapped(index);
+                  },
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
