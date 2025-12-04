@@ -31,8 +31,6 @@ class AppRouter {
 
   GoRouter get router {
     _router ??= GoRouter(
-      // --- CORRECCIÓN CLAVE ---
-      // La ruta inicial SIEMPRE debe ser '/splash'.
       initialLocation: '/welcome',
       routes: <GoRoute>[
         GoRoute(
@@ -67,44 +65,60 @@ class AppRouter {
       redirect: (BuildContext context, GoRouterState state) {
         final authState = authBloc.state;
         final currentLocation = state.matchedLocation;
-        final isLoading = authState.status == AuthStatus.unknown || authState.status == AuthStatus.loading;
-
-        // --- LÓGICA DE REDIRECCIÓN DEFINITIVA ---
-
-        // 1. Mientras la app determina el estado, debe permanecer en la pantalla de carga.
-        // Si ya está en /splash, no hace nada (devuelve null). Esto ROMPE EL BUCLE.
-        if (isLoading) {
-          return currentLocation == '/splash' ? null : '/splash';
-        }
-
-        final isLoggedIn = authState.status == AuthStatus.authenticated;
-        final user = authState.user;
 
         final isPublicRoute = currentLocation == '/login' ||
             currentLocation == '/register' ||
             currentLocation == '/welcome';
 
-        // 2. Si el usuario está logueado:
+        // --- 1. Estado de Carga Inicial (Unknown) ---
+        // Si el estado es 'unknown', SIEMPRE mostrar splash.
+        if (authState.status == AuthStatus.unknown) {
+          return currentLocation == '/splash' ? null : '/splash';
+        }
+
+        // --- 2. Estado de Carga (Loading) ---
+        // Si está en 'loading', SÓLO redirigir a splash si NO estamos ya en
+        // una página de login/registro (que manejan su propio 'loading').
+        if (authState.status == AuthStatus.loading) {
+          if (!isPublicRoute) {
+            return currentLocation == '/splash' ? null : '/splash';
+          }
+          // Si está en login/register, no hacemos nada (null) para
+          // permitir que la pantalla local maneje el estado de carga.
+          return null;
+        }
+
+        // --- 3. Estado Autenticado ---
+        final isLoggedIn = authState.status == AuthStatus.authenticated;
+        final user = authState.user;
+
         if (isLoggedIn) {
-          // Si por alguna razón los detalles del usuario (rol) aún no están, lo forzamos a esperar en splash.
           if (user == null) {
+            // Aún cargando detalles del usuario, forzamos espera
             return '/splash';
           }
-
-          // Si ya tiene rol y está en una ruta pública (o en splash), lo redirigimos a su pantalla correcta.
+          // Si está logueado y en una ruta pública (o en splash), lo mandamos a su home
           if (isPublicRoute || currentLocation == '/splash') {
             return user.role == 'Conductor' ? '/driver-panel' : '/home';
           }
-        }
-        // 3. Si el usuario NO está logueado:
-        else {
-          // Si intenta acceder a una ruta protegida, lo redirigimos a la bienvenida.
-          if (!isPublicRoute && currentLocation != '/splash') {
-            return '/welcome';
-          }
+          // Está logueado y en una ruta protegida, se queda
+          return null;
         }
 
-        // 4. Si ninguna condición se cumple, la navegación es válida. No hacemos nada.
+        // --- 4. Estado No Autenticado ---
+        if (!isLoggedIn) {
+          // Si NO está logueado y está en una ruta pública, se queda
+          if (isPublicRoute) {
+            return null;
+          }
+          // Si NO está logueado y está en SPLASH (carga inicial fallida)
+          if (currentLocation == '/splash') {
+            return '/welcome';
+          }
+          // Si NO está logueado y en CUALQUIER OTRA ruta protegida
+          return '/welcome';
+        }
+
         return null;
       },
       refreshListenable: GoRouterRefreshStream(authBloc.stream),

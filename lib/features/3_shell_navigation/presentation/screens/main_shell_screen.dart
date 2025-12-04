@@ -44,7 +44,7 @@ class _MainScreenState extends State<MainScreen> {
           child: Padding(
             // --- AJUSTE ---
             // 1. Aumentar MÁS AÚN el padding vertical exterior para BAJAR la barra
-            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 0.01), // Más padding vertical (era 24)
+            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 1), // Más padding vertical (era 24)
             // -------------
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0), // Padding interno del container
