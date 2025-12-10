@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:untitled2/features/2_map_view/domain/entities/bus_location.dart';
+import 'package:untitled2/features/2_map_view/domain/entities/bus_route.dart'; // Import BusRoute
 import 'package:untitled2/features/2_map_view/domain/repositories/map_repository.dart';
 import 'package:untitled2/features/2_map_view/domain/usecases/get_bus_route_details.dart';
 import 'package:untitled2/features/2_map_view/domain/usecases/update_user_location.dart';

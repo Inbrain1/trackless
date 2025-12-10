@@ -35,10 +35,34 @@ class Bus {
   }
 }
 
-// const String _BUS_IMAGE_PATH = 'assets/image_9a5b1c.png'; // Comentado si no tienes la imagen
 
-class BusListScreen extends StatelessWidget {
-  const BusListScreen({super.key});
+class BusListScreen extends StatefulWidget {
+  final VoidCallback? onSwitchToMap;
+  const BusListScreen({super.key, this.onSwitchToMap});
+
+  @override
+  State<BusListScreen> createState() => _BusListScreenState();
+}
+
+class _BusListScreenState extends State<BusListScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,233 +70,241 @@ class BusListScreen extends StatelessWidget {
     final FirebaseFirestore firestore = sl<FirebaseFirestore>();
 
     return Scaffold(
+      backgroundColor: Colors.black, // Dark background for contrast like the image
       appBar: AppBar(
-        title: const Text("Rutas de Bus"),
+        title: const Text("Rutas de Bus", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
       ),
-      // Usamos StreamBuilder para obtener los buses de Firestore en tiempo real
-      body: StreamBuilder<QuerySnapshot>(
-        stream: firestore.collection('buses').orderBy('mainName').snapshots(),
-        builder: (context, snapshot) {
-          // Estados de carga y error
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error al cargar buses: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No hay buses disponibles en la base de datos.'));
-          }
+      body: Column(
+        children: [
+          // Buscador
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: TextField(
+              controller: _searchController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Buscar ruta...',
+                hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                prefixIcon: Icon(Icons.search, color: Colors.white.withOpacity(0.7)),
+                filled: true,
+                fillColor: Colors.grey.shade900,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+              ),
+            ),
+          ),
+          
+          // Lista Filtrada
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: firestore.collection('buses').orderBy('mainName').snapshots(),
+              builder: (context, snapshot) {
+                // Estados de carga y error
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error al cargar buses: ${snapshot.error}', style: const TextStyle(color: Colors.white)));
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('No hay buses disponibles.', style: TextStyle(color: Colors.white)));
+                }
 
-          // Convertimos los documentos de Firestore a objetos Bus
-          final buses = snapshot.data!.docs.map((doc) => Bus.fromFirestore(doc)).toList();
+                // Filtrar localmente (más rápido para listas pequeñas)
+                final buses = snapshot.data!.docs
+                    .map((doc) => Bus.fromFirestore(doc))
+                    .where((bus) => bus.mainName.toLowerCase().contains(_searchQuery))
+                    .toList();
 
-          // Construimos la lista
-          return ListView.builder(
-            padding: const EdgeInsets.all(16.0),
-            itemCount: buses.length,
-            itemBuilder: (context, index) {
-              final bus = buses[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
-                // Pasamos el objeto Bus a la tarjeta
-                child: BusRouteCard(bus: bus),
-              );
-            },
-          );
-        },
+                if (buses.isEmpty) {
+                  return const Center(child: Text('No se encontraron rutas con ese nombre.', style: TextStyle(color: Colors.white54)));
+                }
+
+                // Construimos la GRILLA (GridView)
+                return GridView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // Dos columnas
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.85, // Un poco más alto que ancho para acomodar la info
+                  ),
+                  itemCount: buses.length,
+                  itemBuilder: (context, index) {
+                    final bus = buses[index];
+                    // Usamos un Key único para ayudar al framework a diferenciar items al filtrar
+                    return BusGridCard(
+                      key: ValueKey(bus.id),
+                      bus: bus,
+                      index: index,
+                      onTap: widget.onSwitchToMap, // Pasamos el callback
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class BusRouteCard extends StatelessWidget {
+class BusGridCard extends StatelessWidget {
   final Bus bus;
+  final int index;
+  final VoidCallback? onTap;
 
-  const BusRouteCard({super.key, required this.bus});
+  const BusGridCard({
+    super.key,
+    required this.bus,
+    required this.index,
+    this.onTap,
+  });
 
-  // Widget para mostrar la imagen o un icono placeholder
-  Widget _buildBusImage() {
-    // Si tienes la imagen en assets, descomenta esto:
-    // try {
-    //   return Image.asset(
-    //     _BUS_IMAGE_PATH,
-    //     width: 100,
-    //     height: 100,
-    //     fit: BoxFit.cover,
-    //     errorBuilder: (context, error, stackTrace) => _buildPlaceholderIcon(),
-    //   );
-    // } catch (_) {
-    //   return _buildPlaceholderIcon();
-    // }
-    // Si no, usamos un icono:
-    return _buildPlaceholderIcon();
-  }
+  // --- LÓGICA DE SELECCIÓN ---
+  void _onBusSelected(BuildContext context) {
+    // 1. Siempre seleccionamos la ruta en el mapa (activo o no)
+    context.read<MapBloc>().add(BusRouteSelected(bus.id));
 
-  Widget _buildPlaceholderIcon() {
-    return Container(
-      width: 100,
-      height: 100,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade300, // Un color de fondo suave
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(15),
-          bottomLeft: Radius.circular(15),
-        ),
-      ),
-      child: const Center(
-        child: Icon(Icons.directions_bus, color: Colors.black54, size: 50),
-      ),
-    );
-  }
-
-  // --- LÓGICA DE SELECCIÓN SIMPLIFICADA ---
-  void _onBusSelected(BuildContext context, bool isBusActive) {
-    if (isBusActive) {
-      // 1. Despachamos el evento para cargar los datos del bus en el MapBloc
-      context.read<MapBloc>().add(BusRouteSelected(bus.id));
-
-      // 2. Mostramos el SnackBar indicando al usuario que cambie de pestaña
-      ScaffoldMessenger.of(context).hideCurrentSnackBar(); // Oculta SnackBar anterior si existe
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Mostrando ${bus.mainName}. Ve a la pestaña Mapa.'),
-          duration: const Duration(seconds: 3), // Duración un poco más larga
-        ),
-      );
-
+    // 2. Ejecutamos el callback para cambiar de pestaña (ir al mapa)
+    if (onTap != null) {
+      onTap!();
     } else {
-      // Si el bus está INACTIVO, mostramos el AlertDialog con la ruta corta (sin cambios)
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(bus.mainName),
-          content: Text("Ruta resumida (no activo):\n${bus.rutaCorta}"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cerrar'),
-            ),
-          ],
-        ),
+      // Fallback por si no hay callback (no debería pasar si se configura bien)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ruta ${bus.mainName} seleccionada')),
       );
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    // Consumimos el MapBloc para saber si este bus está activo
     return BlocBuilder<MapBloc, MapState>(
-      // buildWhen: (previous, current) => previous.activeBuses != current.activeBuses, // Optimización opcional
       builder: (context, mapState) {
-        // Buscamos si el ID de este bus existe en la lista de buses activos
-        final bool isBusActive = mapState.activeBuses.any((activeBus) => activeBus.busName == bus.id);
-        final Color indicatorColor = isBusActive ? Colors.green : Colors.red;
+        // Contamos cuántos buses activos coinciden con este ID de ruta
+        final int activeCount = mapState.activeBuses.where((activeBus) => activeBus.busName == bus.id).length;
+        // Ya no usamos isBusActive para bloquear la acción, solo para el indicador visual
 
-        return Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(15),
-            onTap: () {
-              _onBusSelected(context, isBusActive);
-            },
-            child: Container(
-              height: 120, // Altura fija para la tarjeta
-              padding: const EdgeInsets.only(right: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch, // Estirar elementos verticalmente
+        return GestureDetector(
+          onTap: () => _onBusSelected(context),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20), // Bordes redondeados
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 6,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  // --- Columna 1: Imagen ---
-                  ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(15),
-                        bottomLeft: Radius.circular(15),
-                      ),
-                      child: _buildBusImage()
+                  // 1. Imagen de fondo (Placeholder aleatorio)
+                  Image.network(
+                    'https://picsum.photos/400/400?random=$index', // Imagen de ejemplo
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        color: Colors.grey.shade900,
+                        child: const Center(child: Icon(Icons.image, color: Colors.white24)),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey.shade800,
+                        child: const Center(child: Icon(Icons.directions_bus, size: 40, color: Colors.white54)),
+                      );
+                    },
                   ),
-                  const SizedBox(width: 12),
 
-                  // --- Columna 2: Información del Bus ---
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center, // Centrar verticalmente
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              // Indicador de Actividad
-                              Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: indicatorColor,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 1.5),
-                                  boxShadow: [ // Sombra sutil para el indicador
-                                    BoxShadow(
-                                      color: indicatorColor.withOpacity(0.5),
-                                      blurRadius: 3,
-                                      offset: const Offset(0, 1),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Nombre principal
-                              Flexible( // Para evitar overflow si el nombre es largo
-                                child: Text(
-                                  bus.mainName,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                  overflow: TextOverflow.ellipsis, // Cortar si es muy largo
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          // Identificador de ruta
-                          Text(
-                            bus.routeIdentifier,
-                            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const Spacer(), // Empuja el horario hacia abajo
-                          // Horario
-                          Row(
-                            children: [
-                              Icon(Icons.schedule, color: Colors.blueGrey.shade400, size: 16),
-                              const SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  bus.schedule,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500, // Un poco menos grueso
-                                    color: Colors.blueGrey.shade700,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                  // 2. Degradado oscuro abajo para el texto
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      height: 100, // Aumentado ligeramente para acomodar el contador
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.9),
+                          ],
+                        ),
                       ),
                     ),
                   ),
 
-                  // --- Columna 3: Icono de Flecha ---
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-                      child: Icon(Icons.arrow_forward_ios, color: Colors.grey.shade400, size: 20),
+                  // 3. Texto (Nombre del Bus + Contador)
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          bus.mainName,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            height: 1.1,
+                            shadows: [
+                              Shadow(blurRadius: 4, color: Colors.black, offset: Offset(0, 2)),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 6),
+                        
+                        // Contador de activos (Sutil)
+                        if (activeCount > 0)
+                           Container(
+                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                             decoration: BoxDecoration(
+                               color: Colors.black45,
+                               borderRadius: BorderRadius.circular(10),
+                               border: Border.all(color: Colors.white12),
+                             ),
+                             child: Row(
+                               mainAxisSize: MainAxisSize.min,
+                               children: [
+                                 const Icon(Icons.circle, size: 8, color: Colors.greenAccent),
+                                 const SizedBox(width: 6),
+                                 Text(
+                                   '$activeCount activos',
+                                   style: const TextStyle(
+                                     fontSize: 11,
+                                     color: Colors.white70,
+                                     fontWeight: FontWeight.w500,
+                                   ),
+                                 ),
+                                ],
+                             ),
+                           )
+                        else
+                          Text(
+                            'Sin servicio',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.white.withOpacity(0.4),
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ],
