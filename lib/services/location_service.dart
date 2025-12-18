@@ -7,7 +7,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class LocationService {
   StreamSubscription<Position>? positionStream;
 
-  Future<void> checkPermissionAndGetLocation(Function(LatLng) onLocationUpdate) async {
+  Future<void> checkPermissionAndGetLocation(
+      Function(LatLng) onLocationUpdate) async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -36,7 +37,7 @@ class LocationService {
 
   void startLocationUpdates(Function(LatLng) onLocationUpdate) {
     positionStream = Geolocator.getPositionStream(
-      locationSettings: LocationSettings(
+      locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 10,
       ),
@@ -45,32 +46,59 @@ class LocationService {
       User? user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
-        // Obtener el número de bus desde Firestore
-        FirebaseFirestore.instance.collection('users').doc(user.uid).get().then((doc) {
-          if (doc.exists) {
-            String busName = doc.data()?['busName'];
-            // Subir la ubicación junto con el número de bus a Firestore
-            FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-              'latitude': position.latitude,
-              'longitude': position.longitude,
-              'busName': busName,
-              'timestamp': FieldValue.serverTimestamp(),
-            });
-          }
-        });
+        // Obtener el número de bus desde Firestore una sola vez
+        // Nota: Esto asume que el busName no cambia durante la sesión de tracking.
+        // Si cambia, se debería manejar externamente o recargar.
+        _updateLocationToFirestore(user, position);
       }
 
       onLocationUpdate(latLng);
     });
   }
 
+  // Cache para el nombre del bus para evitar lecturas constantes
+  String? _cachedBusName;
+  bool _hasFetchedBusName = false;
+
+  Future<void> _updateLocationToFirestore(User user, Position position) async {
+    try {
+      if (!_hasFetchedBusName) {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        if (doc.exists) {
+          _cachedBusName = doc.data()?['busName'];
+        }
+        _hasFetchedBusName = true;
+      }
+
+      if (_cachedBusName != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+          'busName': _cachedBusName,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      print('Error updating location: $e');
+    }
+  }
+
   void dispose() {
     positionStream?.cancel();
   }
-}class UserLocationService {
+}
+
+class UserLocationService {
   StreamSubscription<Position>? positionStream;
 
-  Future<void> checkPermissionAndGetLocation(Function(LatLng) onLocationUpdate) async {
+  Future<void> checkPermissionAndGetLocation(
+      Function(LatLng) onLocationUpdate) async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -99,7 +127,7 @@ class LocationService {
 
   void startLocationUpdates(Function(LatLng) onLocationUpdate) {
     positionStream = Geolocator.getPositionStream(
-      locationSettings: LocationSettings(
+      locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 10,
       ),

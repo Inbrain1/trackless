@@ -7,6 +7,8 @@ import 'package:untitled2/services/auth_service.dart';
 import '../../features/1_auth/data/models/user_model.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -55,10 +57,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('Pantalla Principal'),
+        title: const Text('Pantalla Principal'),
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.logout),
             onPressed: () async {
               await _authService.signOut();
               Navigator.pushReplacementNamed(context, '/');
@@ -67,12 +69,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : _userModel == null
           ? const Center(child: Text('No se pudo cargar los detalles del usuario.'))
           : _userModel!.role == 'Conductor'
-          ? DriverScreen() // Pantalla para conductores
-          :UserMainScreen(),
+          ? const DriverScreen() // Pantalla para conductores
+          :const UserMainScreen(),
       //     : UserMapScreen(), // Pantalla para usuarios
     );
   }

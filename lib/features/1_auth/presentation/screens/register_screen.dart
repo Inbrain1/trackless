@@ -9,6 +9,8 @@ import 'package:untitled2/features/1_auth/presentation/widgets/auth_background.d
 import 'package:untitled2/features/1_auth/presentation/widgets/card_container.dart';
 
 class RegisterScreen extends StatelessWidget {
+  const RegisterScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,8 +33,8 @@ class RegisterScreen extends StatelessWidget {
               TextButton(
                 onPressed: () => context.go('/login'),
                 style: ButtonStyle(
-                  overlayColor: MaterialStateProperty.all(Colors.indigo.withOpacity(0.1)),
-                  shape: MaterialStateProperty.all(const StadiumBorder()),
+                  overlayColor: WidgetStateProperty.all(Colors.indigo.withOpacity(0.1)),
+                  shape: WidgetStateProperty.all(const StadiumBorder()),
                 ),
                 child: const Text('¿Ya tienes una cuenta?', style: TextStyle(fontSize: 18, color: Colors.black87)),
               ),
@@ -130,7 +132,7 @@ class _RegisterFormState extends State<_RegisterForm> {
             ),
             const SizedBox(height: 30),
             DropdownButtonFormField<String>(
-              value: _selectedRole,
+              initialValue: _selectedRole,
               decoration: InputDecorations.authInputDecoration(
                 labelText: 'Rol',
                 prefixIcon: Icons.person_outline, hintText: 'Seleciona tu rol',

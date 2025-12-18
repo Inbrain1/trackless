@@ -1,20 +1,27 @@
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'place_detail_screen.dart';
 
 class DiscoveryScreen extends StatelessWidget {
-  const DiscoveryScreen({super.key});
+  final VoidCallback? onSwitchToMap;
+
+  const DiscoveryScreen({super.key, this.onSwitchToMap});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black, // Dark background
       appBar: AppBar(
-        title: const Text("Descubre Cusco", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text("Descubre Cusco",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.black,
         elevation: 0,
         actions: [
-          IconButton(icon: const Icon(Icons.search, color: Colors.white), onPressed: () {}),
+          IconButton(
+              icon: const Icon(Icons.search, color: Colors.white),
+              onPressed: () {}),
         ],
       ),
       body: SingleChildScrollView(
@@ -23,7 +30,7 @@ class DiscoveryScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionTitle("Lo más popular"), 
+              _buildSectionTitle("Lo más popular"),
               const SizedBox(height: 16),
               _buildPopularCarousel(),
               const SizedBox(height: 30),
@@ -33,7 +40,7 @@ class DiscoveryScreen extends StatelessWidget {
               const SizedBox(height: 30),
               _buildSectionTitle("Descuentos y Eventos"),
               const SizedBox(height: 16),
-              _buildDiscountsMosaic(),
+              _buildSteamStyleOffers(context),
               const SizedBox(height: 30),
               _buildSectionTitle("Lugares Recomendados"),
               const SizedBox(height: 16),
@@ -45,187 +52,233 @@ class DiscoveryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDiscountsMosaic() {
-    return StaggeredGrid.count(
-      crossAxisCount: 2,
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      children: [
-        StaggeredGridTile.count(
-          crossAxisCellCount: 1,
-          mainAxisCellCount: 1,
-          child: _buildDiscountCard(
-            title: "Tour Valle Sagrado",
-            discount: "-30%",
-            price: "S/. 85.00",
-            originalPrice: "S/. 120.00",
-            image: "https://picsum.photos/400/400?random=50",
-            isTall: false,
+  // --- COLOR PALETTE (Matched to previous design) ---
+  static const Color azulPrincipal = Color(0xFF007BFF);
+  static const Color negroTarjeta = Color(0xFF2C2C2C);
+  static const Color textoPrincipal = Colors.white;
+  static const Color textoSecundario = Colors.white70;
+
+  Widget _buildSteamStyleOffers(BuildContext context) {
+    return SizedBox(
+      height: 300, // Fixed height for horizontal scroll
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        children: [
+          // GROUP 1
+          _buildSteamGroup(
+            bigItem: _buildSteamCard(
+              imageUrl:
+                  'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80',
+              title: 'Cena Romántica',
+              subtitle: '20% OFF en Restaurante Central',
+              tag: 'Oferta',
+              isBig: true,
+              context: context,
+            ),
+            smallItem1: _buildSteamCard(
+              imageUrl:
+                  'https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=400&q=80',
+              title: 'Café Gratis',
+              subtitle: 'Por compra > \$10',
+              tag: 'Promo',
+              isBig: false,
+              context: context,
+            ),
+            smallItem2: _buildSteamCard(
+              imageUrl:
+                  'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=400&q=80',
+              title: 'Gym Pass',
+              subtitle: 'Clase de prueba gratis',
+              tag: 'Evento',
+              isBig: false,
+              context: context,
+            ),
           ),
-        ),
-        StaggeredGridTile.count(
-          crossAxisCellCount: 1,
-          mainAxisCellCount: 1,
-          child: _buildDiscountCard(
-            title: "Cena Show",
-            discount: "-25%",
-            price: "S/. 45.00",
-            originalPrice: "S/. 60.00",
-            image: "https://picsum.photos/400/400?random=51",
-            isTall: false,
+          const SizedBox(width: 16),
+          // GROUP 2
+          _buildSteamGroup(
+            bigItem: _buildSteamCard(
+              imageUrl:
+                  'https://images.unsplash.com/photo-1493770348161-369560ae357d?auto=format&fit=crop&w=800&q=80',
+              title: 'Menú Ejecutivo',
+              subtitle: 'Almuerzos desde \$15',
+              tag: 'Diario',
+              isBig: true,
+              context: context,
+            ),
+            smallItem1: _buildSteamCard(
+              imageUrl:
+                  'https://picsum.photos/400/400?random=101', // Fixed broken URL
+              title: 'Co-Working',
+              subtitle: 'Day Pass 50% OFF',
+              tag: 'Descuento',
+              isBig: false,
+              context: context,
+            ),
+            smallItem2: _buildSteamCard(
+              imageUrl:
+                  'https://picsum.photos/400/400?random=102', // Fixed broken URL
+              title: 'Feria Libro',
+              subtitle: 'Entrada Libre',
+              tag: 'Evento',
+              isBig: false,
+              context: context,
+            ),
           ),
-        ),
-        StaggeredGridTile.count(
-          crossAxisCellCount: 1,
-          mainAxisCellCount: 2,
-          child: _buildDiscountCard(
-            title: "Expedición Salkantay",
-            discount: "-50%",
-            price: "S/. 250.00",
-            originalPrice: "S/. 500.00",
-            image: "https://picsum.photos/400/800?random=52",
-            badge: "OFERTA SEMANAL",
-            isTall: true,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildDiscountCard({
-    required String title,
-    required String discount,
-    required String price,
-    required String originalPrice,
-    required String image,
-    bool isTall = false,
-    String? badge,
+  Widget _buildSteamGroup({
+    required Widget bigItem,
+    required Widget smallItem1,
+    required Widget smallItem2,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1B2838), // Steam-like dark blue background
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 2))],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
+    return SizedBox(
+      height: 300,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image takes up most space but leaves room for bottom info
-          Positioned.fill(
-            bottom: 60, // Leave space for info text
-            child: Image.network(
-              image,
-              fit: BoxFit.cover,
+          // Large Card
+          SizedBox(
+            width: 260,
+            height: 300,
+            child: bigItem,
+          ),
+          const SizedBox(width: 8),
+          // Column of 2 Small Cards
+          SizedBox(
+            width: 160,
+            child: Column(
+              children: [
+                Expanded(child: smallItem1),
+                const SizedBox(height: 8),
+                Expanded(child: smallItem2),
+              ],
             ),
           ),
-          
-          // Gradient Overlay on Image
-          Positioned.fill(
-             bottom: 60,
-             child: Container(
-               decoration: BoxDecoration(
-                 gradient: LinearGradient(
-                   begin: Alignment.topCenter,
-                   end: Alignment.bottomCenter,
-                   colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
-                 ),
-               ),
-             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSteamCard({
+    required String imageUrl,
+    required String title,
+    required String subtitle,
+    required String tag,
+    required bool isBig,
+    required BuildContext context,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => PlaceDetailScreen(
+              imageUrl: imageUrl,
+              title: title,
+              subtitle: subtitle,
+
+              tag: tag,
+              onSwitchToMap: onSwitchToMap,
+              location:
+                  const LatLng(-13.5170887, -71.9785356), // Sample location
+            ),
           ),
-
-          if (badge != null)
-             Positioned(
-               top: 12,
-               left: 0,
-               right: 0,
-               child: Center(
-                 child: Container(
-                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                   decoration: BoxDecoration(
-                     color: Colors.blueAccent.withOpacity(0.9),
-                     borderRadius: BorderRadius.circular(4),
-                   ),
-                   child: Text(
-                     badge,
-                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                   ),
-                 ),
-               ),
-             ),
-
-          // Bottom Info Section
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 60,
-            child: Container(
-              color: const Color(0xFF16202D), // Dark footer
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-              child: Row(
-                children: [
-                  // Green Discount Tag
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    color: const Color(0xFF4C6B22), // Steam green
-                    child: Text(
-                      discount,
-                      style: const TextStyle(
-                        color: Color(0xFFBECC23), // Lime green text
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: negroTarjeta,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 6,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          image: DecorationImage(
+            image: NetworkImage(imageUrl),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.3),
+              BlendMode.darken,
+            ),
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Gradient
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    colors: [Colors.transparent, Colors.black.withOpacity(0.9)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: const [0.5, 1.0],
                   ),
-                  const SizedBox(width: 10),
-                  // Prices
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end, // Align prices to right
-                      children: [
-                        Text(
-                          originalPrice,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            decoration: TextDecoration.lineThrough,
-                            fontSize: 11,
-                          ),
-                        ),
-                        Text(
-                          price,
-                          style: const TextStyle(
-                             color: Color(0xFFBECC23), // Lime price color
-                             fontWeight: FontWeight.bold,
-                             fontSize: 14,
-                          ),
-                        ),
-                      ],
+                ),
+              ),
+            ),
+            // Tag
+            Positioned(
+              top: 10,
+              right: 10,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: azulPrincipal.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  tag,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+            ),
+            // Text Content
+            Positioned(
+              bottom: 12,
+              left: 12,
+              right: 12,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: isBig ? 20 : 14,
                     ),
-                  )
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: isBig ? 4 : 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                    maxLines: isBig ? 2 : 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             ),
-          ),
-          
-          // Title Overlay (Above the footer)
-          Positioned(
-            bottom: 65,
-            left: 10,
-            right: 10,
-            child: Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                shadows: [Shadow(color: Colors.black, blurRadius: 4)],
-              ),
-            ),
-          )
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -241,16 +294,26 @@ class DiscoveryScreen extends StatelessWidget {
     );
   }
 
-
-
 // ... (existing imports)
 
   Widget _buildPopularCarousel() {
     final popularItems = [
-      {'title': 'Ruta del Barroco', 'image': 'https://picsum.photos/600/900?random=1'}, // Taller images
-      {'title': 'Cafés San Blas', 'image': 'https://picsum.photos/600/900?random=2'},
-      {'title': 'Mercado San Pedro', 'image': 'https://picsum.photos/600/900?random=3'},
-      {'title': 'Miradores Secretos', 'image': 'https://picsum.photos/600/900?random=4'},
+      {
+        'title': 'Ruta del Barroco',
+        'image': 'https://picsum.photos/600/900?random=1'
+      }, // Taller images
+      {
+        'title': 'Cafés San Blas',
+        'image': 'https://picsum.photos/600/900?random=2'
+      },
+      {
+        'title': 'Mercado San Pedro',
+        'image': 'https://picsum.photos/600/900?random=3'
+      },
+      {
+        'title': 'Miradores Secretos',
+        'image': 'https://picsum.photos/600/900?random=4'
+      },
     ];
 
     return SizedBox(
@@ -258,67 +321,93 @@ class DiscoveryScreen extends StatelessWidget {
       child: Swiper(
         itemBuilder: (BuildContext context, int index) {
           final item = popularItems[index];
-          return Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              image: DecorationImage(
-                image: NetworkImage(item['image']!),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.25), BlendMode.darken),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                )
-              ],
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  bottom: 25,
-                  left: 20,
-                  right: 20,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item['title']!,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          shadows: [
-                            Shadow(blurRadius: 10, color: Colors.black, offset: Offset(0, 2)),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // Optional: Add a "Explore" or subtitle if desired
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.white30),
-                        ),
-                        child: const Text(
-                          "Ver Detalles",
-                          style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
-                        ),
-                      )
-                    ],
+          return GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => PlaceDetailScreen(
+                    imageUrl: item['image']!,
+                    title: item['title']!,
+                    subtitle: 'Destino popular en Cusco',
+                    tag: 'Popular',
+                    onSwitchToMap: onSwitchToMap,
+                    location: const LatLng(
+                        -13.516801, -71.977463), // Saqsaywaman approx
                   ),
                 ),
-              ],
+              );
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                image: DecorationImage(
+                  image: NetworkImage(item['image']!),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                      Colors.black.withOpacity(0.25), BlendMode.darken),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  )
+                ],
+              ),
+              child: Stack(
+                children: [
+                  Positioned(
+                    bottom: 25,
+                    left: 20,
+                    right: 20,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item['title']!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(
+                                  blurRadius: 10,
+                                  color: Colors.black,
+                                  offset: Offset(0, 2)),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // Optional: Add a "Explore" or subtitle if desired
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.white30),
+                          ),
+                          child: const Text(
+                            "Ver Detalles",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
         itemCount: popularItems.length,
         itemWidth: 280.0, // Fixed width for cards
         itemHeight: 420.0, // Increased height
-        layout: SwiperLayout.STACK, // Stack layout gives a cool depth effect often associated with "cards"
+        layout: SwiperLayout
+            .STACK, // Stack layout gives a cool depth effect often associated with "cards"
         // Alternatively use DEFAULT with viewportFraction
         // layout: SwiperLayout.DEFAULT,
         // viewportFraction: 0.75,
@@ -330,7 +419,7 @@ class DiscoveryScreen extends StatelessWidget {
   Widget _buildSteamCategories() {
     final categories = [
       {
-        'name': 'GASTRONOMÍA', 
+        'name': 'GASTRONOMÍA',
         'images': [
           'https://picsum.photos/150/150?random=10',
           'https://picsum.photos/150/150?random=11',
@@ -340,7 +429,7 @@ class DiscoveryScreen extends StatelessWidget {
         'color': Colors.blueAccent
       },
       {
-        'name': 'HISTORIA', 
+        'name': 'HISTORIA',
         'images': [
           'https://picsum.photos/150/150?random=20',
           'https://picsum.photos/150/150?random=21',
@@ -350,7 +439,7 @@ class DiscoveryScreen extends StatelessWidget {
         'color': Colors.amberAccent
       },
       {
-        'name': 'AVENTURA', 
+        'name': 'AVENTURA',
         'images': [
           'https://picsum.photos/150/150?random=30',
           'https://picsum.photos/150/150?random=31',
@@ -360,7 +449,7 @@ class DiscoveryScreen extends StatelessWidget {
         'color': Colors.greenAccent
       },
       {
-        'name': 'NOCTURNA', 
+        'name': 'NOCTURNA',
         'images': [
           'https://picsum.photos/150/150?random=40',
           'https://picsum.photos/150/150?random=41',
@@ -393,7 +482,7 @@ class DiscoveryScreen extends StatelessWidget {
               children: [
                 // Collage Background
                 _buildCollageBackground(images),
-                
+
                 // Gradient Overlay (Blue/Teal tinted)
                 Container(
                   decoration: BoxDecoration(
@@ -415,21 +504,28 @@ class DiscoveryScreen extends StatelessWidget {
                   right: 0,
                   child: Center(
                     child: Container(
-                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                       decoration: BoxDecoration(
-                         color: Colors.white,
-                         borderRadius: BorderRadius.circular(4), 
-                         boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 2))],
-                       ),
-                       child: Text(
-                         cat['name']! as String,
-                         style: TextStyle(
-                           color: Colors.blue.shade900, // Deep blue text similar to steam ref
-                           fontWeight: FontWeight.w800,
-                           fontSize: 15,
-                           letterSpacing: 1.0,
-                         ),
-                       ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: const [
+                          BoxShadow(
+                              color: Colors.black45,
+                              blurRadius: 4,
+                              offset: Offset(0, 2))
+                        ],
+                      ),
+                      child: Text(
+                        cat['name']! as String,
+                        style: TextStyle(
+                          color: Colors.blue
+                              .shade900, // Deep blue text similar to steam ref
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -479,9 +575,11 @@ class DiscoveryScreen extends StatelessWidget {
         color: Colors.grey.shade900,
         borderRadius: BorderRadius.circular(20),
         image: DecorationImage(
-          image: NetworkImage('https://picsum.photos/500/300?random=${index + 10}'),
+          image: NetworkImage(
+              'https://picsum.photos/500/300?random=${index + 10}'),
           fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.4), BlendMode.darken),
+          colorFilter:
+              ColorFilter.mode(Colors.black.withOpacity(0.4), BlendMode.darken),
         ),
       ),
       child: Stack(
@@ -505,7 +603,8 @@ class DiscoveryScreen extends StatelessWidget {
                   children: [
                     Icon(Icons.star, color: Colors.amber, size: 16),
                     SizedBox(width: 4),
-                    Text("4.8 (120 reviews)", style: TextStyle(color: Colors.white70)),
+                    Text("4.8 (120 reviews)",
+                        style: TextStyle(color: Colors.white70)),
                   ],
                 ),
               ],

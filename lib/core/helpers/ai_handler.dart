@@ -7,14 +7,14 @@ class AIHandler {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("IA Presionada"),
-          content: Text("En Desarollo. PROXIMAMENTE...."),
+          title: const Text("IA Presionada"),
+          content: const Text("En Desarollo. PROXIMAMENTE...."),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("Cerrar"),
+              child: const Text("Cerrar"),
             ),
           ],
         );

@@ -5,7 +5,7 @@ class BusSelectionSheet extends StatefulWidget {
   final Function(String busName) onBusSelected;
   final String? selectedBusName;
 
-  BusSelectionSheet({required this.onBusSelected, required this.selectedBusName});
+  const BusSelectionSheet({super.key, required this.onBusSelected, required this.selectedBusName});
 
   @override
   _BusSelectionSheetState createState() => _BusSelectionSheetState();

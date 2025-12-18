@@ -6,7 +6,7 @@ class MapWidget extends StatefulWidget {
   final Set<Marker> markers;
   final Function(GoogleMapController) onMapCreated;
 
-  MapWidget({
+  const MapWidget({super.key, 
     required this.initialPosition,
     required this.markers,
     required this.onMapCreated,

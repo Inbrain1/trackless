@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class NotificationsService {
-  static GlobalKey<ScaffoldMessengerState> messengerKey = new GlobalKey<ScaffoldMessengerState>();
+  static GlobalKey<ScaffoldMessengerState> messengerKey = GlobalKey<ScaffoldMessengerState>();
 
   static void showSnackbar(String message) {
     final scaffoldMessenger = messengerKey.currentState;
@@ -10,7 +10,7 @@ class NotificationsService {
       final snackBar = SnackBar(
         content: Text(
           message,
-          style: TextStyle(color: Colors.white, fontSize: 20),
+          style: const TextStyle(color: Colors.white, fontSize: 20),
         ),
       );
 

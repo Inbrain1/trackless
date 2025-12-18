@@ -4,10 +4,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // --- IMPORTACIONES CLAVE ---
-import '../lib/delete/data/bus_routes.dart';
-import '../lib/services/directions_service.dart';
+import 'package:untitled2/delete/data/bus_routes.dart';
+import 'package:untitled2/services/directions_service.dart';
 // Importamos tus opciones de Firebase
-import '../lib/firebase_options.dart';
+import 'package:untitled2/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

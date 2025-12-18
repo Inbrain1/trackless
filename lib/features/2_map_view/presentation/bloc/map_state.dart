@@ -13,7 +13,9 @@ class MapState extends Equatable {
   final String? selectedBusName;
   final String errorMessage;
   final bool isTracking; // Para el conductor: ¿Está transmitiendo?
-  final List<BusLocation> activeBuses; // Para el usuario: Lista de TODOS los buses activos
+  final List<BusLocation>
+      activeBuses; // Para el usuario: Lista de TODOS los buses activos
+  final LatLng? focusedLocation; // For active navigation
 
   const MapState({
     this.status = MapStatus.initial,
@@ -24,6 +26,7 @@ class MapState extends Equatable {
     this.errorMessage = '',
     this.isTracking = false,
     this.activeBuses = const [], // <-- VALOR INICIAL
+    this.focusedLocation,
   });
 
   MapState copyWith({
@@ -35,29 +38,34 @@ class MapState extends Equatable {
     String? errorMessage,
     bool? isTracking,
     List<BusLocation>? activeBuses, // <-- NUEVO
+    LatLng? focusedLocation,
     bool clearSelectedBus = false,
   }) {
     return MapState(
       status: status ?? this.status,
       userLocation: userLocation ?? this.userLocation,
-      selectedBusRoute: clearSelectedBus ? null : selectedBusRoute ?? this.selectedBusRoute,
+      selectedBusRoute:
+          clearSelectedBus ? null : selectedBusRoute ?? this.selectedBusRoute,
       busLocations: clearSelectedBus ? [] : busLocations ?? this.busLocations,
-      selectedBusName: clearSelectedBus ? null : selectedBusName ?? this.selectedBusName,
+      selectedBusName:
+          clearSelectedBus ? null : selectedBusName ?? this.selectedBusName,
       errorMessage: errorMessage ?? this.errorMessage,
       isTracking: isTracking ?? this.isTracking,
       activeBuses: activeBuses ?? this.activeBuses, // <-- NUEVO
+      focusedLocation: focusedLocation ?? this.focusedLocation,
     );
   }
 
   @override
   List<Object?> get props => [
-    status,
-    userLocation,
-    selectedBusRoute,
-    busLocations,
-    selectedBusName,
-    errorMessage,
-    isTracking,
-    activeBuses, // <-- NUEVO
-  ];
+        status,
+        userLocation,
+        selectedBusRoute,
+        busLocations,
+        selectedBusName,
+        errorMessage,
+        isTracking,
+        activeBuses, // <-- NUEVO
+        focusedLocation,
+      ];
 }

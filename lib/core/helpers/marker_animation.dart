@@ -13,7 +13,7 @@ class MarkerAnimationService {
     double currentZoom = 14.0,
     bool animate = true,
   }) async {
-    if (stopCoords.isEmpty || stopCoords.length < 1) {
+    if (stopCoords.isEmpty || stopCoords.isEmpty) {
       print("❌ stopCoords vacío o no válido. Se cancela animación.");
       return;
     }

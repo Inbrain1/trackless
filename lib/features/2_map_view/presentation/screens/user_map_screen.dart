@@ -45,15 +45,30 @@ class _UserMapViewState extends State<_UserMapView> {
       'assets/stopbus.png', // Asegúrate que esta ruta sea correcta
     ).catchError((e) {
       print("Error loading stopbus.png: $e"); // Manejo de error si no carga
-      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange); // Fallback icon
+      return BitmapDescriptor.defaultMarkerWithHue(
+          BitmapDescriptor.hueOrange); // Fallback icon
     });
-
 
     // Icono para buses activos (ejemplo: un bus verde)
     // Puedes crear otro asset o usar uno por defecto con color
-    _activeBusIcon = await BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+    _activeBusIcon =
+        await BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
 
     if (mounted) setState(() {});
+  }
+
+  void _zoomIn() async {
+    final controller = _mapController;
+    if (controller != null) {
+      await controller.animateCamera(CameraUpdate.zoomIn());
+    }
+  }
+
+  void _zoomOut() async {
+    final controller = _mapController;
+    if (controller != null) {
+      await controller.animateCamera(CameraUpdate.zoomOut());
+    }
   }
 
   @override
@@ -69,23 +84,37 @@ class _UserMapViewState extends State<_UserMapView> {
           }
           // Animar cámara a la ubicación del usuario la primera vez que se obtiene
           // Opcional: Podrías querer centrar solo si no hay un bus seleccionado
-          if (state.userLocation != null && _mapController != null && state.selectedBusRoute == null) {
+          if (state.userLocation != null &&
+              _mapController != null &&
+              state.selectedBusRoute == null) {
             //_mapController!.animateCamera(CameraUpdate.newLatLng(state.userLocation!));
-            _mapController!.animateCamera(CameraUpdate.newLatLngZoom(state.userLocation!, 15)); // Zoom inicial
+            _mapController!.animateCamera(CameraUpdate.newLatLngZoom(
+                state.userLocation!, 15)); // Zoom inicial
           }
           // Si se selecciona una ruta, animar para mostrarla (opcional)
-          if (state.selectedBusRoute != null && state.selectedBusRoute!.routePoints.isNotEmpty && _mapController != null) {
+          if (state.selectedBusRoute != null &&
+              state.selectedBusRoute!.routePoints.isNotEmpty &&
+              _mapController != null) {
             // Calcular límites para mostrar toda la ruta
             try {
-              LatLngBounds bounds = _boundsFromLatLngList(state.selectedBusRoute!.routePoints);
-              _mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50.0)); // 50px padding
+              LatLngBounds bounds =
+                  _boundsFromLatLngList(state.selectedBusRoute!.routePoints);
+              _mapController!.animateCamera(
+                  CameraUpdate.newLatLngBounds(bounds, 50.0)); // 50px padding
             } catch (e) {
               print("Error calculating bounds: $e");
               // Fallback: Centrar en el primer punto de la ruta si falla el cálculo de límites
               if (state.selectedBusRoute!.routePoints.isNotEmpty) {
-                _mapController!.animateCamera(CameraUpdate.newLatLngZoom(state.selectedBusRoute!.routePoints.first, 14));
+                _mapController!.animateCamera(CameraUpdate.newLatLngZoom(
+                    state.selectedBusRoute!.routePoints.first, 14));
               }
             }
+          }
+
+          // Animate to focused location from "Llegar Ya"
+          if (state.focusedLocation != null && _mapController != null) {
+            _mapController!.animateCamera(
+                CameraUpdate.newLatLngZoom(state.focusedLocation!, 16));
           }
         },
         buildWhen: (previous, current) {
@@ -109,7 +138,8 @@ class _UserMapViewState extends State<_UserMapView> {
       markers.add(Marker(
         markerId: const MarkerId('user_location'),
         position: state.userLocation!,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet), // Color distintivo
+        icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueViolet), // Color distintivo
         infoWindow: const InfoWindow(title: 'Tu Ubicación'),
         anchor: const Offset(0.5, 0.5), // Centrar el icono
       ));
@@ -143,9 +173,11 @@ class _UserMapViewState extends State<_UserMapView> {
 
     // Añadir marcadores de buses en tiempo real (SOLO para el bus SELECCIONADO)
     if (_activeBusIcon != null) {
-      for (final busLocation in state.busLocations) { // busLocations ahora solo tiene el bus seleccionado
+      for (final busLocation in state.busLocations) {
+        // busLocations ahora solo tiene el bus seleccionado
         markers.add(Marker(
-          markerId: MarkerId('bus_${busLocation.busName}'), // Usar busName para ID único
+          markerId: MarkerId(
+              'bus_${busLocation.busName}'), // Usar busName para ID único
           position: busLocation.position,
           icon: _activeBusIcon!, // Icono de bus activo (verde)
           infoWindow: InfoWindow(title: busLocation.busName),
@@ -167,7 +199,7 @@ class _UserMapViewState extends State<_UserMapView> {
           ),
           onCameraMove: (CameraPosition position) {
             // Actualizar el zoom actual al mover la cámara
-            if ((position.zoom - _currentZoom).abs() > 0.8) { 
+            if ((position.zoom - _currentZoom).abs() > 0.8) {
               setState(() {
                 _currentZoom = position.zoom;
               });
@@ -182,16 +214,18 @@ class _UserMapViewState extends State<_UserMapView> {
           compassEnabled: true,
           mapType: MapType.normal,
         ),
-        
+
         // --- BUS NAME HEADER ---
         if (state.selectedBusName != null)
           Positioned(
-            top: MediaQuery.of(context).padding.top + 10, // SafeArea top + padding
+            top: MediaQuery.of(context).padding.top +
+                10, // SafeArea top + padding
             left: 20,
             right: 20,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.85), // Dark background
                   borderRadius: BorderRadius.circular(30),
@@ -207,7 +241,8 @@ class _UserMapViewState extends State<_UserMapView> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.directions_bus, color: Colors.amber, size: 24),
+                    const Icon(Icons.directions_bus,
+                        color: Colors.amber, size: 24),
                     const SizedBox(width: 12),
                     Flexible(
                       child: Text(
@@ -227,6 +262,50 @@ class _UserMapViewState extends State<_UserMapView> {
               ),
             ),
           ),
+
+        // --- ELEGANT ZOOM CONTROLS ---
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 10,
+          right: 16,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.85),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: Colors.white24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.add_rounded,
+                      color: Colors.white, size: 26),
+                  onPressed: _zoomIn,
+                  tooltip: 'Zoom In',
+                  splashRadius: 24,
+                ),
+                Container(
+                  width: 30,
+                  height: 1,
+                  color: Colors.white12,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.remove_rounded,
+                      color: Colors.white, size: 26),
+                  onPressed: _zoomOut,
+                  tooltip: 'Zoom Out',
+                  splashRadius: 24,
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -276,8 +355,7 @@ class _UserMapViewState extends State<_UserMapView> {
       neLng = y0;
     }
 
-
-    return LatLngBounds(northeast: LatLng(neLat, neLng), southwest: LatLng(swLat, swLng));
+    return LatLngBounds(
+        northeast: LatLng(neLat, neLng), southwest: LatLng(swLat, swLng));
   }
-
 }

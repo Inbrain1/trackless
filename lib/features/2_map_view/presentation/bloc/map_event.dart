@@ -40,10 +40,19 @@ class StartGpsTracking extends MapEvent {}
 class StopGpsTracking extends MapEvent {}
 
 // --- CORRECTION: Event name made public ---
-class ActiveBusesUpdated extends MapEvent { // Removed underscore
+class ActiveBusesUpdated extends MapEvent {
+  // Removed underscore
   final List<BusLocation> activeBuses;
   const ActiveBusesUpdated(this.activeBuses); // Removed underscore
 
   @override
   List<Object?> get props => [activeBuses];
+}
+
+class FocusOnLocation extends MapEvent {
+  final LatLng location;
+  const FocusOnLocation(this.location);
+
+  @override
+  List<Object?> get props => [location];
 }

@@ -7,7 +7,7 @@ import '../features/1_auth/data/models/user_model.dart';
 class AuthService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FlutterSecureStorage _storage = FlutterSecureStorage(); // Instancia de FlutterSecureStorage
+  const FlutterSecureStorage _storage = FlutterSecureStorage(); // Instancia de FlutterSecureStorage
 
   Future<User?> signIn(String email, String password) async {
     try {

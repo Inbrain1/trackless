@@ -16,7 +16,7 @@ class _MigrationScreenState extends State<MigrationScreen> {
   bool _isLoading = false;
   String _statusMessage = 'Listo para migrar los datos a Firestore.';
   double _progress = 0.0;
-  int _totalBuses = legacy_routes.buses.length;
+  final int _totalBuses = legacy_routes.buses.length;
 
   // Función para borrar todos los buses y rutas existentes
   Future<void> _deleteOldData(FirebaseFirestore firestore, WriteBatch batch, Function(String) updateMessage) async {

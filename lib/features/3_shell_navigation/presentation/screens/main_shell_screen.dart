@@ -26,7 +26,9 @@ class _MainScreenState extends State<MainScreen> {
     BusListScreen(onSwitchToMap: () {
       _onItemTapped(1); // Cambiar a la pestaña Mapa (índice 1)
     }),
-    const DiscoveryScreen(), // Index 3
+    DiscoveryScreen(onSwitchToMap: () {
+      _onItemTapped(1); // Switch to Map Tab (index 1)
+    }),
   ];
 
   void _onItemTapped(int index) {
@@ -45,11 +47,13 @@ class _MainScreenState extends State<MainScreen> {
           index: _selectedIndex,
           children: _widgetOptions,
         ),
-        bottomNavigationBar: SafeArea( // SafeArea afuera
+        bottomNavigationBar: SafeArea(
+          // SafeArea afuera
           // SafeArea removed from here to allow floating effect if desired, but kept for padding logic.
           // Changed layout to support Glassmorphism
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0), // Removed bottom padding to sit closer to SafeArea
+            padding: const EdgeInsets.fromLTRB(20, 0, 20,
+                0), // Removed bottom padding to sit closer to SafeArea
             child: Container(
               decoration: BoxDecoration(
                 // No color here, we use the child for blur
@@ -68,18 +72,26 @@ class _MainScreenState extends State<MainScreen> {
                   filter: _sigmaXY(20, 20), // Strong blur
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5), // Semi-transparent black
-                      border: Border.all(color: Colors.white.withOpacity(0.12), width: 1.5),
+                      color: Colors.black
+                          .withOpacity(0.5), // Semi-transparent black
+                      border: Border.all(
+                          color: Colors.white.withOpacity(0.12), width: 1.5),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12.0, vertical: 12.0),
                     child: GNav(
                       rippleColor: Colors.white.withOpacity(0.2),
                       hoverColor: Colors.white.withOpacity(0.1),
                       gap: 5, // Reduced gap further
                       activeColor: Colors.white,
                       iconSize: 26,
-                      textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12), // Reduced padding further to 8
+                      textStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 12), // Reduced padding further to 8
                       duration: const Duration(milliseconds: 300),
                       tabBackgroundColor: Colors.white.withOpacity(0.15),
                       color: Colors.white.withOpacity(0.6),
