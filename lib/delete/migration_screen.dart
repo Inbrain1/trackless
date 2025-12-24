@@ -1,9 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-// Importamos los buses y el modelo de tu carpeta 'delete'
-import 'package:untitled2/delete/data/bus_routes.dart' as legacy_routes;
-import 'package:untitled2/delete/data/bus_model.dart' as legacy_model;
+import 'package:flutter/services.dart' show rootBundle;
 
 class MigrationScreen extends StatefulWidget {
   const MigrationScreen({super.key});
@@ -16,19 +14,17 @@ class _MigrationScreenState extends State<MigrationScreen> {
   bool _isLoading = false;
   String _statusMessage = 'Listo para migrar los datos a Firestore.';
   double _progress = 0.0;
-  final int _totalBuses = legacy_routes.buses.length;
+  
+  // Use the exact path as defined in pubspec.yaml
+  final String _jsonAssetPath = 'lib/delete/data/full_bus_routes copy.json';
 
-  // Función para borrar todos los buses y rutas existentes
   Future<void> _deleteOldData(FirebaseFirestore firestore, WriteBatch batch, Function(String) updateMessage) async {
-    updateMessage('Borrando datos antiguos (buses)...');
-    final busesSnapshot = await firestore.collection('buses').limit(500).get();
-    if (busesSnapshot.docs.isNotEmpty) {
-      for (var doc in busesSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-    }
-
     updateMessage('Borrando datos antiguos (busRoutes)...');
+    
+    // We only need to clean busRoutes as per requirements, but cleaning buses is also good practice if we are rebuilding.
+    // However, the prompt specifically asks to overwrite/update existing entries.
+    // Deleting first ensures no stale data remains.
+    
     final routesSnapshot = await firestore.collection('busRoutes').limit(500).get();
     if (routesSnapshot.docs.isNotEmpty) {
       for (var doc in routesSnapshot.docs) {
@@ -37,54 +33,7 @@ class _MigrationScreenState extends State<MigrationScreen> {
     }
   }
 
-  // Función para subir los nuevos buses
-  Future<void> _uploadNewData(FirebaseFirestore firestore, WriteBatch batch, Function(String, double) updateMessage) async {
-    int count = 0;
-
-    // Iteramos sobre la lista de buses de tu archivo 'delete/data/bus_routes.dart'
-    for (final legacy_model.Bus bus in legacy_routes.buses) {
-      count++;
-      updateMessage(
-        'Subiendo bus $count/$_totalBuses: ${bus.name}',
-        count / _totalBuses,
-      );
-
-      // Convertimos la lista de LatLng a lista de GeoPoint (formato de Firestore)
-      final List<GeoPoint> routeGeoPoints = bus.route
-          .map((latLng) => GeoPoint(latLng.latitude, latLng.longitude))
-          .toList();
-
-      // 1. Creamos el documento en la colección 'buses' (para la lista)
-      // Usamos el nombre del bus como ID del documento
-      final busDocRef = firestore.collection('buses').doc(bus.name);
-      batch.set(busDocRef, {
-        'mainName': bus.name,
-        'routeIdentifier': bus.code,
-        'schedule': '6:00 AM - 10:00 PM', // Valor de relleno
-        'rutaCorta': 'Ruta: ${bus.code}', // Valor de relleno
-      });
-
-      // 2. Creamos el documento en la colección 'busRoutes' (para el mapa)
-      // Usamos el nombre del bus como ID del documento
-      final routeDocRef = firestore.collection('busRoutes').doc(bus.name);
-      batch.set(routeDocRef, {
-        'name': bus.name,
-        'route': routeGeoPoints, // La polilínea
-        'stops': routeGeoPoints, // Usamos la ruta como paradas (puedes ajustar esto luego en Firestore)
-      });
-
-      // Firestore batch solo soporta 500 operaciones. Hacemos commit cada 490 (2 op por bus)
-      if (count % 245 == 0) {
-        await batch.commit();
-        batch = firestore.batch(); // Inicia un nuevo batch
-        updateMessage('Lote parcial subido ($count)...', count / _totalBuses);
-      }
-    }
-    // Commit final para los buses restantes
-    await batch.commit();
-  }
-
-  void _runMigration() async {
+  Future<void> _runMigration() async {
     setState(() {
       _isLoading = true;
       _statusMessage = 'Iniciando migración...';
@@ -95,55 +44,139 @@ class _MigrationScreenState extends State<MigrationScreen> {
     var batch = firestore.batch();
 
     try {
-      // 1. Borrar datos
-      await _deleteOldData(firestore, batch, (message) {
-        setState(() {
-          _statusMessage = message;
-        });
-        print(message);
-      });
+      // 1. Load JSON file
+      _updateStatus('Leyendo archivo JSON...');
+      // Note: Ensure the path matches your pubspec.yaml assets entry
+      final String jsonString = await rootBundle.loadString(_jsonAssetPath);
+      final List<dynamic> jsonList = json.decode(jsonString);
+      
+      final int totalRoutes = jsonList.length;
+      _updateStatus('Archivo leído. Encontradas $totalRoutes rutas.');
 
-      // Commit de las eliminaciones
-      await batch.commit();
-      batch = firestore.batch(); // Nuevo batch para las subidas
+      // 2. Prepare for Batch Processing
+      int processedCount = 0;
+      int batchOperationCount = 0;
+      int successCount = 0;
 
-      // 2. Subir datos
-      await _uploadNewData(firestore, batch, (message, progress) {
-        setState(() {
-          _statusMessage = message;
-          _progress = progress;
-        });
-        print(message);
-      });
+      for (var i = 0; i < totalRoutes; i++) {
+        final routeData = jsonList[i];
+        processedCount++;
+        
+        final String name = routeData['name']?.toString() ?? '';
+        final String code = routeData['code']?.toString() ?? '';
+        final List<dynamic> routePoints = routeData['route'] ?? [];
+        
+        // Report progress periodically to avoid UI flooding
+        if (processedCount % 5 == 0 || processedCount == 1) {
+           _updateStatus('Procesando ruta $processedCount/$totalRoutes: $name', processedCount / totalRoutes);
+        }
 
-      // 3. Mostrar éxito
-      _statusMessage = '¡Éxito! Se subieron $_totalBuses buses a Firestore.';
-      print(_statusMessage);
+        if (name.isEmpty) {
+          print('WARNING: Skipping route at index $i due to missing name.');
+          continue;
+        }
+
+        // 3. Map Data (Stops & Polyline)
+        List<Map<String, dynamic>> stopsList = [];
+        List<GeoPoint> polylinePoints = [];
+
+        for (var point in routePoints) {
+          final String pointName = point['name']?.toString() ?? '';
+          final Map<String, dynamic> location = point['location'] ?? {};
+          
+          // Safer casting
+          double? lat = (location['lat'] is num) ? (location['lat'] as num).toDouble() : null;
+          double? lng = (location['lng'] is num) ? (location['lng'] as num).toDouble() : null;
+
+          if (lat != null && lng != null) {
+            stopsList.add({
+              'name': pointName,
+              'lat': lat,
+              'lng': lng,
+            });
+            polylinePoints.add(GeoPoint(lat, lng));
+          }
+        }
+
+        if (stopsList.isEmpty) {
+           print('WARNING: Route "$name" has no valid stops/locations. Skipping.');
+           continue;
+        }
+
+        // 4. Create Document Reference & Data
+        final docRef = firestore.collection('busRoutes').doc(name);
+        
+        final Map<String, dynamic> docData = {
+          'name': name,
+          'code': code,
+          'stops': stopsList, // Requirement: Array of objects
+          'route': polylinePoints, // Polyline for map
+          'lastUpdated': FieldValue.serverTimestamp(),
+        };
+
+        batch.set(docRef, docData);
+        batchOperationCount++;
+        successCount++;
+
+        // 5. Commit Batch periodically (limit is 500, we use 400 for safety)
+        if (batchOperationCount >= 400) {
+          print('Committing partial batch of $batchOperationCount operations...');
+          await batch.commit();
+          batch = firestore.batch(); // Create new batch
+          batchOperationCount = 0;
+        }
+      }
+
+      // Final Commit for remaining docs
+      if (batchOperationCount > 0) {
+        print('Committing final batch of $batchOperationCount operations...');
+        await batch.commit();
+      }
+      
+      _updateStatus('¡Completado! $successCount/$totalRoutes rutas migradas exitosamente.', 1.0);
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_statusMessage), backgroundColor: Colors.green),
+           SnackBar(
+             content: Text('Migración finalizada. $successCount rutas subidas.'), 
+             backgroundColor: Colors.green
+           ),
         );
       }
-    } catch (e) {
-      _statusMessage = 'Error en la migración: $e';
-      print(_statusMessage);
+
+    } catch (e, stackTrace) {
+      print('CRITICAL ERROR: $e');
+      print(stackTrace);
+      _updateStatus('Error crítico: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_statusMessage), backgroundColor: Colors.red),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
+  }
+
+  void _updateStatus(String message, [double? progress]) {
+    setState(() {
+      _statusMessage = message;
+      if (progress != null) {
+        _progress = progress;
+      }
+    });
+    print(message);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Migración de Datos'),
+        title: const Text('Migración de Datos JSON'),
       ),
       body: Center(
         child: Padding(
@@ -151,10 +184,16 @@ class _MigrationScreenState extends State<MigrationScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                'Presiona el botón para borrar los buses antiguos y subir los $_totalBuses buses de la carpeta "delete/" a Firestore.',
+              const Text(
+                'Presiona el botón para migrar los datos desde "full_bus_routes copy.json" a Firestore.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Importante: Reinicia la app si acabas de agregar el archivo a assets.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.grey),
               ),
               const SizedBox(height: 30),
               if (_isLoading)
@@ -168,10 +207,10 @@ class _MigrationScreenState extends State<MigrationScreen> {
               else
                 ElevatedButton.icon(
                   onPressed: _runMigration,
-                  icon: const Icon(Icons.upload_file),
-                  label: const Text('Iniciar Migración'),
+                  icon: const Icon(Icons.cloud_upload),
+                  label: const Text('Iniciar Migración JSON'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
+                    backgroundColor: Colors.blueAccent,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                     textStyle: const TextStyle(fontSize: 18),

@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 // Quitamos la importación de service_locator y MapEvent ya que no se crea el BLoC aquí
 import 'package:untitled2/features/2_map_view/presentation/bloc/map_bloc.dart';
 import 'package:untitled2/features/2_map_view/presentation/bloc/map_state.dart';
+import 'package:untitled2/core/constants/bus_stop_data.dart';
 // Quitamos la importación de BusSelectionSheet si no se usa directamente aquí
 
 class UserMapScreen extends StatelessWidget {
@@ -159,12 +160,15 @@ class _UserMapViewState extends State<_UserMapView> {
 
       // Añadir marcadores para las paradas SOLO si el zoom es suficiente
       if (_currentZoom >= 15.0) {
+        
         for (var i = 0; i < state.selectedBusRoute!.stops.length; i++) {
+          final stop = state.selectedBusRoute!.stops[i];
+          
           markers.add(Marker(
             markerId: MarkerId('stop_${state.selectedBusRoute!.name}_$i'),
-            position: state.selectedBusRoute!.stops[i],
+            position: stop.position,
             icon: _stopBusIcon!, // Icono de parada
-            infoWindow: InfoWindow(title: 'Parada ${i + 1}'),
+            infoWindow: InfoWindow(title: stop.name),
             anchor: const Offset(0.5, 0.5), // Centrar icono de parada
           ));
         }

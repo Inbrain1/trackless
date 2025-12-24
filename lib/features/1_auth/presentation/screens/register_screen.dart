@@ -140,6 +140,7 @@ class _RegisterFormState extends State<_RegisterForm> {
               items: const [
                 DropdownMenuItem(value: 'Usuario', child: Text('Usuario')),
                 DropdownMenuItem(value: 'Conductor', child: Text('Conductor')),
+                DropdownMenuItem(value: 'Development', child: Text('Development')),
               ],
               onChanged: (value) {
                 if (value != null) {

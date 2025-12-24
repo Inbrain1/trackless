@@ -36,6 +36,9 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<StopGpsTracking>(_onStopGpsTracking);
     // --- CORRECTION: Use public event name ---
     on<ActiveBusesUpdated>(_onActiveBusesUpdated); // Removed underscore
+    on<FocusOnLocation>((event, emit) {
+      // TODO: Implement focus logic if needed, currently preventing crash
+    });
 
     _listenToActiveBuses();
   }

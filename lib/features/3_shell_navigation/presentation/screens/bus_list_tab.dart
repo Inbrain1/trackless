@@ -5,6 +5,8 @@ import 'package:untitled2/core/di/service_locator.dart'; // Para obtener Firesto
 import 'package:untitled2/features/2_map_view/presentation/bloc/map_bloc.dart';
 import 'package:untitled2/features/2_map_view/presentation/bloc/map_event.dart';
 import 'package:untitled2/features/2_map_view/presentation/bloc/map_state.dart';
+import 'package:untitled2/core/helpers/bus_assets_helper.dart';
+
 
 // Definición de la entidad Bus actualizada para incluir rutaCorta
 class Bus {
@@ -152,6 +154,7 @@ class _BusListScreenState extends State<BusListScreen> {
           ),
         ],
       ),
+
     );
   }
 }
@@ -196,6 +199,7 @@ class BusGridCard extends StatelessWidget {
           onTap: () => _onBusSelected(context),
           child: Container(
             decoration: BoxDecoration(
+              color: Colors.grey[900], // Fondo oscuro por si la imagen tiene transparencia
               borderRadius: BorderRadius.circular(20), // Bordes redondeados
               boxShadow: [
                 BoxShadow(
@@ -210,24 +214,20 @@ class BusGridCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // 1. Imagen de fondo (Placeholder aleatorio)
-                  Image.network(
-                    'https://picsum.photos/400/400?random=$index', // Imagen de ejemplo
+                  // 1. Imagen de fondo (Asset local)
+                  Image.asset(
+                    BusAssetHelper.getBusImagePath(bus.mainName),
                     fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Container(
-                        color: Colors.grey.shade900,
-                        child: const Center(child: Icon(Icons.image, color: Colors.white24)),
-                      );
-                    },
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        color: Colors.grey.shade800,
+                        color: Colors.grey.shade900,
                         child: const Center(child: Icon(Icons.directions_bus, size: 40, color: Colors.white54)),
                       );
                     },
                   ),
+
+                  // 1.5. Overlay oscuro general para uniformidad
+                  Container(color: Colors.black.withOpacity(0.25)),
 
                   // 2. Degradado oscuro abajo para el texto
                   Align(
@@ -292,7 +292,7 @@ class BusGridCard extends StatelessWidget {
                                      fontWeight: FontWeight.w500,
                                    ),
                                  ),
-                                ],
+                               ],
                              ),
                            )
                         else

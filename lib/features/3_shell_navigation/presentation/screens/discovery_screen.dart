@@ -1,13 +1,28 @@
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:untitled2/core/di/service_locator.dart';
+import 'package:untitled2/features/1_auth/presentation/bloc/auth_bloc.dart';
+import 'package:untitled2/features/1_auth/presentation/bloc/auth_state.dart';
+import 'package:untitled2/features/3_shell_navigation/data/datasources/discovery_service.dart';
+import 'package:untitled2/features/3_shell_navigation/data/models/discovery_card_model_new.dart';
+import 'package:untitled2/features/3_shell_navigation/presentation/screens/create_card_screen.dart';
 import 'place_detail_screen.dart';
 
-class DiscoveryScreen extends StatelessWidget {
+
+class DiscoveryScreen extends StatefulWidget {
   final VoidCallback? onSwitchToMap;
 
   const DiscoveryScreen({super.key, this.onSwitchToMap});
+
+  @override
+  State<DiscoveryScreen> createState() => _DiscoveryScreenState();
+}
+
+class _DiscoveryScreenState extends State<DiscoveryScreen> {
+  final DiscoveryService _discoveryService = DiscoveryService(firestore: sl());
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +38,38 @@ class DiscoveryScreen extends StatelessWidget {
               icon: const Icon(Icons.search, color: Colors.white),
               onPressed: () {}),
         ],
+      ),
+      floatingActionButton: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          if (state.user?.role == 'Development') {
+            return FloatingActionButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (ctx) => Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.add_card),
+                        title: const Text('Create New Card'),
+                        onTap: () {
+                           Navigator.pop(ctx);
+                           Navigator.of(context).push(
+                            MaterialPageRoute(builder: (context) => const CreateCardScreen()),
+                          );
+                        },
+                      ),
+
+                    ],
+                  ),
+                );
+              },
+              backgroundColor: Colors.amber,
+              child: const Icon(Icons.settings), // Changed icon to settings/gear
+            );
+          }
+          return const SizedBox.shrink();
+        },
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -40,7 +87,7 @@ class DiscoveryScreen extends StatelessWidget {
               const SizedBox(height: 30),
               _buildSectionTitle("Descuentos y Eventos"),
               const SizedBox(height: 16),
-              _buildSteamStyleOffers(context),
+              _buildDynamicSteamStyleOffers(context),
               const SizedBox(height: 30),
               _buildSectionTitle("Lugares Recomendados"),
               const SizedBox(height: 16),
@@ -58,117 +105,55 @@ class DiscoveryScreen extends StatelessWidget {
   static const Color textoPrincipal = Colors.white;
   static const Color textoSecundario = Colors.white70;
 
-  Widget _buildSteamStyleOffers(BuildContext context) {
-    return SizedBox(
-      height: 300, // Fixed height for horizontal scroll
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        children: [
-          // GROUP 1
-          _buildSteamGroup(
-            bigItem: _buildSteamCard(
-              imageUrl:
-                  'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80',
-              title: 'Cena Romántica',
-              subtitle: '20% OFF en Restaurante Central',
-              tag: 'Oferta',
-              isBig: true,
-              context: context,
-            ),
-            smallItem1: _buildSteamCard(
-              imageUrl:
-                  'https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=400&q=80',
-              title: 'Café Gratis',
-              subtitle: 'Por compra > \$10',
-              tag: 'Promo',
-              isBig: false,
-              context: context,
-            ),
-            smallItem2: _buildSteamCard(
-              imageUrl:
-                  'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=400&q=80',
-              title: 'Gym Pass',
-              subtitle: 'Clase de prueba gratis',
-              tag: 'Evento',
-              isBig: false,
-              context: context,
-            ),
-          ),
-          const SizedBox(width: 16),
-          // GROUP 2
-          _buildSteamGroup(
-            bigItem: _buildSteamCard(
-              imageUrl:
-                  'https://images.unsplash.com/photo-1493770348161-369560ae357d?auto=format&fit=crop&w=800&q=80',
-              title: 'Menú Ejecutivo',
-              subtitle: 'Almuerzos desde \$15',
-              tag: 'Diario',
-              isBig: true,
-              context: context,
-            ),
-            smallItem1: _buildSteamCard(
-              imageUrl:
-                  'https://picsum.photos/400/400?random=101', // Fixed broken URL
-              title: 'Co-Working',
-              subtitle: 'Day Pass 50% OFF',
-              tag: 'Descuento',
-              isBig: false,
-              context: context,
-            ),
-            smallItem2: _buildSteamCard(
-              imageUrl:
-                  'https://picsum.photos/400/400?random=102', // Fixed broken URL
-              title: 'Feria Libro',
-              subtitle: 'Entrada Libre',
-              tag: 'Evento',
-              isBig: false,
-              context: context,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildDynamicSteamStyleOffers(BuildContext context) {
+    return StreamBuilder<List<DiscoveryCardModel>>(
+      stream: _discoveryService.getDiscoveryCards(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Text('Error al cargar ofertas', style: TextStyle(color: Colors.white));
+        }
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-  Widget _buildSteamGroup({
-    required Widget bigItem,
-    required Widget smallItem1,
-    required Widget smallItem2,
-  }) {
-    return SizedBox(
-      height: 300,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Large Card
-          SizedBox(
-            width: 260,
-            height: 300,
-            child: bigItem,
+        final cards = snapshot.data ?? [];
+        if (cards.isEmpty) {
+          return const Text('No hay ofertas disponibles', style: TextStyle(color: Colors.white70));
+        }
+
+        // Logic to group cards for the Steam style layout
+        // For simplicity in this demo, we'll just show them in a horizontal list
+        // preserving the card style but without the complex group logic for now
+        // or we can try to adapt it if we have at least 3 cards.
+        
+        return SizedBox(
+          height: 300,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: cards.length,
+            itemBuilder: (context, index) {
+              final card = cards[index];
+              return Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: SizedBox(
+                   width: 260, // Fixed width for individual cards in list
+                  child: _buildSteamCard(
+                    card: card,
+                    isBig: true, // Make them all 'big' style for uniformity in this dynamic list
+                    context: context,
+                  ),
+                ),
+              );
+            },
           ),
-          const SizedBox(width: 8),
-          // Column of 2 Small Cards
-          SizedBox(
-            width: 160,
-            child: Column(
-              children: [
-                Expanded(child: smallItem1),
-                const SizedBox(height: 8),
-                Expanded(child: smallItem2),
-              ],
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   Widget _buildSteamCard({
-    required String imageUrl,
-    required String title,
-    required String subtitle,
-    required String tag,
+    required DiscoveryCardModel card,
     required bool isBig,
     required BuildContext context,
   }) {
@@ -177,12 +162,8 @@ class DiscoveryScreen extends StatelessWidget {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => PlaceDetailScreen(
-              imageUrl: imageUrl,
-              title: title,
-              subtitle: subtitle,
-
-              tag: tag,
-              onSwitchToMap: onSwitchToMap,
+              card: card,
+              onSwitchToMap: widget.onSwitchToMap,
               location:
                   const LatLng(-13.5170887, -71.9785356), // Sample location
             ),
@@ -201,7 +182,7 @@ class DiscoveryScreen extends StatelessWidget {
             ),
           ],
           image: DecorationImage(
-            image: NetworkImage(imageUrl),
+            image: NetworkImage(card.imageUrl),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
               Colors.black.withOpacity(0.3),
@@ -236,7 +217,7 @@ class DiscoveryScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  tag,
+                  card.tag,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -255,7 +236,7 @@ class DiscoveryScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    title,
+                    card.title,
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -266,7 +247,7 @@ class DiscoveryScreen extends StatelessWidget {
                   ),
                   SizedBox(height: isBig ? 4 : 2),
                   Text(
-                    subtitle,
+                    card.subtitle,
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 12,
@@ -297,11 +278,122 @@ class DiscoveryScreen extends StatelessWidget {
 // ... (existing imports)
 
   Widget _buildPopularCarousel() {
+    return StreamBuilder<List<DiscoveryCardModel>>(
+      stream: _discoveryService.getDiscoveryCards(),
+      builder: (context, snapshot) {
+        // Fallback or Loading
+        if (!snapshot.hasData) {
+          return const SizedBox(height: 420, child: Center(child: CircularProgressIndicator()));
+        }
+        
+        // Filter specifically for carousel items
+        final carouselCards = snapshot.data!
+            .where((card) => card.type == 'carousel')
+            .toList();
+
+        // If no dynamic cards, show default placeholder items
+        if (carouselCards.isEmpty) {
+           return _buildDefaultCarousel();
+        }
+
+        return SizedBox(
+          height: 420,
+          child: Swiper(
+            itemBuilder: (BuildContext context, int index) {
+              final card = carouselCards[index];
+              return GestureDetector(
+                onTap: () {
+                   Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => PlaceDetailScreen(
+                        card: card,
+                        onSwitchToMap: widget.onSwitchToMap,
+                        location: const LatLng(-13.516801, -71.977463), 
+                      ),
+                    ),
+                  );
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    image: DecorationImage(
+                      image: NetworkImage(card.imageUrl),
+                      fit: BoxFit.cover,
+                      colorFilter: ColorFilter.mode(
+                          Colors.black.withOpacity(0.25), BlendMode.darken),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      )
+                    ],
+                  ),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        bottom: 25,
+                        left: 20,
+                        right: 20,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              card.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                shadows: [
+                                  Shadow(
+                                      blurRadius: 10,
+                                      color: Colors.black,
+                                      offset: Offset(0, 2)),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: Colors.white30),
+                              ),
+                              child: const Text(
+                                "Ver Detalles",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+            itemCount: carouselCards.length,
+            itemWidth: 280.0,
+            itemHeight: 420.0,
+            layout: SwiperLayout.STACK,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDefaultCarousel() {
     final popularItems = [
       {
         'title': 'Ruta del Barroco',
         'image': 'https://picsum.photos/600/900?random=1'
-      }, // Taller images
+      },
       {
         'title': 'Cafés San Blas',
         'image': 'https://picsum.photos/600/900?random=2'
@@ -317,7 +409,7 @@ class DiscoveryScreen extends StatelessWidget {
     ];
 
     return SizedBox(
-      height: 420, // Increased height for elongated look
+      height: 420,
       child: Swiper(
         itemBuilder: (BuildContext context, int index) {
           final item = popularItems[index];
@@ -326,11 +418,18 @@ class DiscoveryScreen extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => PlaceDetailScreen(
-                    imageUrl: item['image']!,
-                    title: item['title']!,
-                    subtitle: 'Destino popular en Cusco',
-                    tag: 'Popular',
-                    onSwitchToMap: onSwitchToMap,
+                    card: DiscoveryCardModel(
+                      title: item['title']!,
+                      subtitle: 'Destino popular en Cusco',
+                      imageUrl: item['image']!,
+                      tag: 'Popular',
+                      type: 'popular',
+                      createdAt: DateTime.now(),
+                      price: 0,
+                      rating: 4.8,
+                      description: 'Descubre los lugares más populares de Cusco.',
+                    ),
+                    onSwitchToMap: widget.onSwitchToMap,
                     location: const LatLng(
                         -13.516801, -71.977463), // Saqsaywaman approx
                   ),
@@ -378,7 +477,6 @@ class DiscoveryScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        // Optional: Add a "Explore" or subtitle if desired
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 6),
@@ -404,14 +502,9 @@ class DiscoveryScreen extends StatelessWidget {
           );
         },
         itemCount: popularItems.length,
-        itemWidth: 280.0, // Fixed width for cards
-        itemHeight: 420.0, // Increased height
-        layout: SwiperLayout
-            .STACK, // Stack layout gives a cool depth effect often associated with "cards"
-        // Alternatively use DEFAULT with viewportFraction
-        // layout: SwiperLayout.DEFAULT,
-        // viewportFraction: 0.75,
-        // scale: 0.9,
+        itemWidth: 280.0,
+        itemHeight: 420.0,
+        layout: SwiperLayout.STACK,
       ),
     );
   }

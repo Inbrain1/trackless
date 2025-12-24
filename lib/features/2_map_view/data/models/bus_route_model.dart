@@ -5,7 +5,7 @@ import 'package:untitled2/features/2_map_view/domain/entities/bus_route.dart';
 class BusRouteModel {
   final String name;
   final List<LatLng> routePoints;
-  final List<LatLng> stops;
+  final List<BusStop> stops;
 
   BusRouteModel({
     required this.name,
@@ -43,22 +43,46 @@ class BusRouteModel {
       }
     }
 
-    List<LatLng> stopsList = [];
+    List<BusStop> stopsList = [];
     if (data != null && data['stops'] is List) {
       // Intenta parsear la lista solo si existe y es una lista
       try {
+        int index = 1;
         stopsList = (data['stops'] as List<dynamic>)
             .map((point) {
+          String stopName = 'Parada $index';
+          LatLng? position;
+
           if (point is GeoPoint) {
-            return LatLng(point.latitude, point.longitude);
-          } else if (point is Map && point.containsKey('lat') && point.containsKey('lng')) {
-            return LatLng(point['lat'], point['lng']);
+            // Support for direct GeoPoint (legacy)
+            position = LatLng(point.latitude, point.longitude);
+          } else if (point is Map) {
+             // NEW: Support for 'coordenada' field (GeoPoint)
+             if (point.containsKey('coordenada') && point['coordenada'] is GeoPoint) {
+               final geoPoint = point['coordenada'] as GeoPoint;
+               position = LatLng(geoPoint.latitude, geoPoint.longitude);
+             }
+             // Support for legacy 'lat'/'lng' fields
+             else if (point.containsKey('lat') && point.containsKey('lng')) {
+               position = LatLng(point['lat'], point['lng']);
+             }
+             
+             // Extract name if present
+             if (point.containsKey('name')) {
+               stopName = point['name'];
+             }
           }
+          
+          if (position != null) {
+            index++;
+            return BusStop(name: stopName, position: position);
+          }
+
           print("Formato de punto de parada inesperado: $point");
           return null;
         })
             .where((point) => point != null)
-            .cast<LatLng>()
+            .cast<BusStop>()
             .toList();
       } catch (e) {
         print("Error parseando 'stops': $e. Usando lista vacía.");
