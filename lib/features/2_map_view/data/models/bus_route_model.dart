@@ -14,86 +14,140 @@ class BusRouteModel {
   });
 
   factory BusRouteModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>?; // Make data nullable
+    final data = doc.data() as Map<String, dynamic>?;
 
-    // --- MODIFICACIÓN CLAVE: Añadir null checks y valores por defecto ---
+    // === CRITICAL FIX: Enhanced route parsing with detailed logging ===
     List<LatLng> routePointsList = [];
-    if (data != null && data['route'] is List) {
-      // Intenta parsear la lista solo si existe y es una lista
-      try {
-        routePointsList = (data['route'] as List<dynamic>)
-        // Añadimos un check extra por si los puntos no son GeoPoints o Maps
-            .map((point) {
-          if (point is GeoPoint) {
-            return LatLng(point.latitude, point.longitude);
-          } else if (point is Map && point.containsKey('lat') && point.containsKey('lng')) {
-            // Soporte para formato {lat: ..., lng: ...}
-            return LatLng(point['lat'], point['lng']);
+
+    print("🔍 DEBUG: Parsing route for doc ID: ${doc.id}");
+    print("🔍 DEBUG: Document data keys: ${data?.keys.toList()}");
+
+    if (data != null && data.containsKey('route')) {
+      print("🔍 DEBUG: 'route' field exists");
+      print("🔍 DEBUG: 'route' type: ${data['route'].runtimeType}");
+
+      if (data['route'] is List) {
+        final rawRoute = data['route'] as List<dynamic>;
+        print("🔍 DEBUG: Route list length: ${rawRoute.length}");
+
+        // Sample first item to diagnose structure
+        if (rawRoute.isNotEmpty) {
+          print(
+              "🔍 DEBUG: First route item type: ${rawRoute.first.runtimeType}");
+          print("🔍 DEBUG: First route item: ${rawRoute.first}");
+        }
+
+        try {
+          List<LatLng> parsedPoints = [];
+          int successCount = 0;
+          int failCount = 0;
+
+          for (int i = 0; i < rawRoute.length; i++) {
+            final point = rawRoute[i];
+            LatLng? latLng;
+
+            if (point is GeoPoint) {
+              latLng = LatLng(point.latitude, point.longitude);
+              successCount++;
+            } else if (point is Map) {
+              // Try different map formats
+              if (point.containsKey('latitude') &&
+                  point.containsKey('longitude')) {
+                latLng = LatLng(point['latitude'], point['longitude']);
+                successCount++;
+              } else if (point.containsKey('lat') && point.containsKey('lng')) {
+                latLng = LatLng(point['lat'], point['lng']);
+                successCount++;
+              } else {
+                print(
+                    "❌ DEBUG: Unexpected map format at index $i: ${point.keys.toList()}");
+                failCount++;
+              }
+            } else {
+              print(
+                  "❌ DEBUG: Unexpected type at index $i: ${point.runtimeType}");
+              failCount++;
+            }
+
+            if (latLng != null) {
+              parsedPoints.add(latLng);
+            }
           }
-          // Si no es un formato esperado, lo ignoramos o lanzamos error
-          print("Formato de punto de ruta inesperado: $point");
-          return null; // O podrías lanzar una excepción
-        })
-            .where((point) => point != null) // Filtramos los nulos
-            .cast<LatLng>() // Aseguramos el tipo
-            .toList();
-      } catch (e) {
-        print("Error parseando 'route': $e. Usando lista vacía.");
-        routePointsList = []; // Fallback a lista vacía en caso de error de parseo
+
+          routePointsList = parsedPoints;
+          print(
+              "✅ DEBUG: Successfully parsed $successCount points, failed: $failCount");
+          print(
+              "✅ DEBUG: Final routePointsList length: ${routePointsList.length}");
+        } catch (e, stackTrace) {
+          print("❌ CRITICAL ERROR parsing 'route': $e");
+          print("❌ Stack trace: $stackTrace");
+          routePointsList = [];
+        }
+      } else {
+        print("❌ DEBUG: 'route' field exists but is NOT a List!");
       }
+    } else {
+      print("❌ DEBUG: 'route' field does NOT exist in document!");
     }
 
+    // Parse stops (keeping existing logic)
     List<BusStop> stopsList = [];
     if (data != null && data['stops'] is List) {
-      // Intenta parsear la lista solo si existe y es una lista
       try {
         int index = 1;
         stopsList = (data['stops'] as List<dynamic>)
             .map((point) {
-          String stopName = 'Parada $index';
-          LatLng? position;
+              String stopName = 'Parada $index';
+              LatLng? position;
 
-          if (point is GeoPoint) {
-            // Support for direct GeoPoint (legacy)
-            position = LatLng(point.latitude, point.longitude);
-          } else if (point is Map) {
-             // NEW: Support for 'coordenada' field (GeoPoint)
-             if (point.containsKey('coordenada') && point['coordenada'] is GeoPoint) {
-               final geoPoint = point['coordenada'] as GeoPoint;
-               position = LatLng(geoPoint.latitude, geoPoint.longitude);
-             }
-             // Support for legacy 'lat'/'lng' fields
-             else if (point.containsKey('lat') && point.containsKey('lng')) {
-               position = LatLng(point['lat'], point['lng']);
-             }
-             
-             // Extract name if present
-             if (point.containsKey('name')) {
-               stopName = point['name'];
-             }
-          }
-          
-          if (position != null) {
-            index++;
-            return BusStop(name: stopName, position: position);
-          }
+              if (point is GeoPoint) {
+                position = LatLng(point.latitude, point.longitude);
+              } else if (point is Map) {
+                if (point.containsKey('coordenada') &&
+                    point['coordenada'] is GeoPoint) {
+                  final geoPoint = point['coordenada'] as GeoPoint;
+                  position = LatLng(geoPoint.latitude, geoPoint.longitude);
+                } else if (point.containsKey('lat') &&
+                    point.containsKey('lng')) {
+                  position = LatLng(point['lat'], point['lng']);
+                }
 
-          print("Formato de punto de parada inesperado: $point");
-          return null;
-        })
+                if (point.containsKey('name')) {
+                  stopName = point['name'];
+                }
+              }
+
+              if (position != null) {
+                index++;
+                return BusStop(name: stopName, position: position);
+              }
+
+              return null;
+            })
             .where((point) => point != null)
             .cast<BusStop>()
             .toList();
       } catch (e) {
-        print("Error parseando 'stops': $e. Usando lista vacía.");
+        print("Error parseando 'stops': $e");
         stopsList = [];
       }
     }
 
+    // === REMOVED FALLBACK LOGIC - DO NOT USE STOPS AS ROUTE ===
+    // The fallback was causing the zig-zag pattern
+    if (routePointsList.isEmpty) {
+      print(
+          "⚠️⚠️⚠️ CRITICAL WARNING: Route data is EMPTY for '${data?['name'] ?? doc.id}'!");
+      print("⚠️ Stops count: ${stopsList.length}");
+      print("⚠️ This will result in NO polyline being drawn!");
+      // DO NOT fallback to stops - let it be empty so we can diagnose the real issue
+    }
+
     return BusRouteModel(
-      name: data?['name'] ?? data?['mainName'] ?? doc.id, // Usa 'name', 'mainName' o el ID como fallback
-      routePoints: routePointsList, // Usa la lista parseada o vacía
-      stops: stopsList, // Usa la lista parseada o vacía
+      name: data?['name'] ?? data?['mainName'] ?? doc.id,
+      routePoints: routePointsList, // Will be empty if parsing failed
+      stops: stopsList,
     );
   }
 

@@ -11,7 +11,6 @@ import 'package:untitled2/features/3_shell_navigation/data/models/discovery_card
 import 'package:untitled2/features/3_shell_navigation/presentation/screens/create_card_screen.dart';
 import 'place_detail_screen.dart';
 
-
 class DiscoveryScreen extends StatefulWidget {
   final VoidCallback? onSwitchToMap;
 
@@ -42,35 +41,46 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
       floatingActionButton: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           if (state.user?.role == 'Development') {
-            return FloatingActionButton(
+            return FloatingActionButton.extended(
               onPressed: () {
                 showModalBottomSheet(
                   context: context,
+                  backgroundColor: const Color(0xFF1A1A1A),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
                   builder: (ctx) => Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.add_card),
-                        title: const Text('Create New Card'),
+                        leading:
+                            const Icon(Icons.add_card, color: Colors.white),
+                        title: const Text('Create New Card',
+                            style: TextStyle(color: Colors.white)),
                         onTap: () {
-                           Navigator.pop(ctx);
-                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (context) => const CreateCardScreen()),
+                          Navigator.pop(ctx);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (context) => const CreateCardScreen()),
                           );
                         },
                       ),
-
                     ],
                   ),
                 );
               },
               backgroundColor: Colors.amber,
-              child: const Icon(Icons.settings), // Changed icon to settings/gear
+              icon: const Icon(Icons.add, color: Colors.black),
+              label: const Text('Nueva Tarjeta',
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold)),
             );
           }
           return const SizedBox.shrink();
         },
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -110,7 +120,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
       stream: _discoveryService.getDiscoveryCards(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Text('Error al cargar ofertas', style: TextStyle(color: Colors.white));
+          return const Text('Error al cargar ofertas',
+              style: TextStyle(color: Colors.white));
         }
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -118,14 +129,15 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
 
         final cards = snapshot.data ?? [];
         if (cards.isEmpty) {
-          return const Text('No hay ofertas disponibles', style: TextStyle(color: Colors.white70));
+          return const Text('No hay ofertas disponibles',
+              style: TextStyle(color: Colors.white70));
         }
 
         // Logic to group cards for the Steam style layout
         // For simplicity in this demo, we'll just show them in a horizontal list
         // preserving the card style but without the complex group logic for now
         // or we can try to adapt it if we have at least 3 cards.
-        
+
         return SizedBox(
           height: 300,
           child: ListView.builder(
@@ -137,10 +149,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
               return Padding(
                 padding: const EdgeInsets.only(right: 16.0),
                 child: SizedBox(
-                   width: 260, // Fixed width for individual cards in list
+                  width: 260, // Fixed width for individual cards in list
                   child: _buildSteamCard(
                     card: card,
-                    isBig: true, // Make them all 'big' style for uniformity in this dynamic list
+                    isBig:
+                        true, // Make them all 'big' style for uniformity in this dynamic list
                     context: context,
                   ),
                 ),
@@ -283,17 +296,17 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
       builder: (context, snapshot) {
         // Fallback or Loading
         if (!snapshot.hasData) {
-          return const SizedBox(height: 420, child: Center(child: CircularProgressIndicator()));
+          return const SizedBox(
+              height: 420, child: Center(child: CircularProgressIndicator()));
         }
-        
+
         // Filter specifically for carousel items
-        final carouselCards = snapshot.data!
-            .where((card) => card.type == 'carousel')
-            .toList();
+        final carouselCards =
+            snapshot.data!.where((card) => card.type == 'carousel').toList();
 
         // If no dynamic cards, show default placeholder items
         if (carouselCards.isEmpty) {
-           return _buildDefaultCarousel();
+          return _buildDefaultCarousel();
         }
 
         return SizedBox(
@@ -303,12 +316,12 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
               final card = carouselCards[index];
               return GestureDetector(
                 onTap: () {
-                   Navigator.of(context).push(
+                  Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => PlaceDetailScreen(
                         card: card,
                         onSwitchToMap: widget.onSwitchToMap,
-                        location: const LatLng(-13.516801, -71.977463), 
+                        location: const LatLng(-13.516801, -71.977463),
                       ),
                     ),
                   );
@@ -427,7 +440,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                       createdAt: DateTime.now(),
                       price: 0,
                       rating: 4.8,
-                      description: 'Descubre los lugares más populares de Cusco.',
+                      description:
+                          'Descubre los lugares más populares de Cusco.',
                     ),
                     onSwitchToMap: widget.onSwitchToMap,
                     location: const LatLng(

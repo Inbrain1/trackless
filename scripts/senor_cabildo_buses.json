@@ -1,0 +1,34 @@
+{
+    "mainName": "Señor del Cabildo",
+    "code": "RTI-10",
+    "stops": [
+        {
+            "name": "Arco Tica Tica",
+            "coordenada": {
+                "latitude": -13.507588493410763,
+                "longitude": -72.00666051759957
+            }
+        },
+        {
+            "name": "Quinta Mollendinah",
+            "coordenada": {
+                "latitude": -13.508166221733074,
+                "longitude": -72.00478772232204
+            }
+        },
+        {
+            "name": "Reservorio",
+            "coordenada": {
+                "latitude": -13.50765310950269,
+                "longitude": -72.00227593011032
+            }
+        },
+        {
+            "name": "Final Chimpahuaylla",
+            "coordenada": {
+                "latitude": -13.551903003659595,
+                "longitude": -71.87977565792531
+            }
+        }
+    ]
+}

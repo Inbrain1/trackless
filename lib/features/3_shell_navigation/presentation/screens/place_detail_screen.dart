@@ -8,6 +8,7 @@ import 'package:untitled2/features/2_map_view/presentation/bloc/map_bloc.dart';
 import 'package:untitled2/features/2_map_view/presentation/bloc/map_event.dart';
 import 'package:untitled2/features/3_shell_navigation/data/datasources/discovery_service.dart';
 import 'package:untitled2/features/3_shell_navigation/data/models/discovery_card_model_new.dart';
+import 'package:untitled2/screens/consumer/transport_options_screen.dart';
 
 class PlaceDetailScreen extends StatefulWidget {
   final DiscoveryCardModel card;
@@ -33,7 +34,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text('Delete Card?', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Delete Card?', style: TextStyle(color: Colors.white)),
         content: const Text(
           'Are you sure you want to delete this card? This action cannot be undone.',
           style: TextStyle(color: Colors.white70),
@@ -55,7 +57,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     if (confirmed == true && mounted) {
       if (widget.card.id == null) {
         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Error: Card ID is missing.')),
           );
         }
@@ -63,8 +65,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       }
 
       try {
-        await _discoveryService.deleteDiscoveryCard(widget.card.id!); 
-        
+        await _discoveryService.deleteDiscoveryCard(widget.card.id!);
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Card deleted successfully')),
@@ -73,7 +75,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
         }
       } catch (e) {
         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error deleting card: $e')),
           );
         }
@@ -258,8 +260,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                           scrollDirection: Axis.horizontal,
                           physics: const BouncingScrollPhysics(),
                           children: [
-                            _buildVideoThumbnail(
-                                widget.card.imageUrl), // Main image as video thumbnail
+                            _buildVideoThumbnail(widget.card
+                                .imageUrl), // Main image as video thumbnail
                             if (widget.card.galleryImages.isNotEmpty)
                               ...widget.card.galleryImages.map((img) => Padding(
                                     padding: const EdgeInsets.only(left: 12),
@@ -313,8 +315,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
             left: 0,
             right: 0,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
@@ -332,8 +333,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
-                        color:
-                            const Color(0xFF4C6B22), // Steam-like green hint
+                        color: const Color(0xFF4C6B22), // Steam-like green hint
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -375,12 +375,26 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        // If coordinates are provided, focus map on them
-                        if (widget.location != null) {
-                          sl<MapBloc>().add(FocusOnLocation(widget.location!));
+                        // If transport options are available, navigate to full-screen selector
+                        if (widget.card.transportOptions.isNotEmpty) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TransportOptionsScreen(
+                                transportOptions: widget.card.transportOptions,
+                                discoveryCardTitle: widget.card.title,
+                              ),
+                            ),
+                          );
+                        } else {
+                          // Fallback: If no transport options but coordinates are provided, focus map on them
+                          if (widget.location != null) {
+                            sl<MapBloc>()
+                                .add(FocusOnLocation(widget.location!));
+                          }
+                          Navigator.of(context).pop(); // Close detail screen
+                          widget.onSwitchToMap?.call(); // Switch to Map tab
                         }
-                        Navigator.of(context).pop(); // Close detail screen
-                        widget.onSwitchToMap?.call(); // Switch to Map tab
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor:

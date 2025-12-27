@@ -148,11 +148,22 @@ class _UserMapViewState extends State<_UserMapView> {
 
     // Añadir polilínea y paradas de la ruta seleccionada (si existe)
     if (state.selectedBusRoute != null && _stopBusIcon != null) {
+      // --- DEBUG: Log route point count ---
+      final routePointCount = state.selectedBusRoute!.routePoints.length;
+      final stopCount = state.selectedBusRoute!.stops.length;
+
+      if (routePointCount <= stopCount) {
+        print("⚠️ Route '${state.selectedBusRoute!.name}' has sparse data: "
+            "$routePointCount route points vs $stopCount stops. "
+            "Consider running route generation script.");
+      }
+
       polylines.add(Polyline(
         polylineId: PolylineId(state.selectedBusRoute!.name),
         color: Colors.blue.shade700, // Color más oscuro
         width: 5, // Grosor
-        points: state.selectedBusRoute!.routePoints,
+        points:
+            state.selectedBusRoute!.routePoints, // ✅ CORRECT: Uses route field
         jointType: JointType.round, // Uniones redondeadas
         startCap: Cap.roundCap, // Inicio redondeado
         endCap: Cap.roundCap, // Fin redondeado
@@ -160,10 +171,9 @@ class _UserMapViewState extends State<_UserMapView> {
 
       // Añadir marcadores para las paradas SOLO si el zoom es suficiente
       if (_currentZoom >= 15.0) {
-        
         for (var i = 0; i < state.selectedBusRoute!.stops.length; i++) {
           final stop = state.selectedBusRoute!.stops[i];
-          
+
           markers.add(Marker(
             markerId: MarkerId('stop_${state.selectedBusRoute!.name}_$i'),
             position: stop.position,

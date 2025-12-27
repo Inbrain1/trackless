@@ -25,10 +25,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         _firestore = firestore;
 
   @override
-  Stream<firebase.User?> get authStateChanges => _firebaseAuth.authStateChanges();
+  Stream<firebase.User?> get authStateChanges =>
+      _firebaseAuth.authStateChanges();
 
   @override
-  Future<UserModel?> signIn({required String email, required String password}) async {
+  Future<UserModel?> signIn(
+      {required String email, required String password}) async {
     try {
       final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
@@ -40,7 +42,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       return null;
     } on firebase.FirebaseAuthException catch (e) {
       // Aquí puedes manejar errores específicos de Firebase
-      print('Error en signIn: ${e.message}');
+      print(
+          'DEBUG AuthRemoteDataSource: Error en signIn (AuthException): ${e.message}');
+      return null;
+    } catch (e) {
+      print('DEBUG AuthRemoteDataSource: Error en signIn (General): $e');
       return null;
     }
   }
@@ -67,7 +73,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         );
 
         // Guardar los detalles del usuario en la colección 'users'
-        await _firestore.collection('users').doc(user.uid).set(userModel.toFirestore());
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .set(userModel.toFirestore());
         return userModel;
       }
       return null;
@@ -89,9 +98,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (docSnapshot.exists) {
         return UserModel.fromFirestore(docSnapshot.data()!, uid);
       }
+      print(
+          'DEBUG AuthRemoteDataSource: User details NOT FOUND in Firestore for UID: $uid');
       return null;
     } catch (e) {
-      print('Error en getUserDetails: $e');
+      print(
+          'DEBUG AuthRemoteDataSource: Error in getUserDetails (Firestore): $e');
       return null;
     }
   }

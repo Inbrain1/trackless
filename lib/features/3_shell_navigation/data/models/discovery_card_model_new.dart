@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:untitled2/features/3_shell_navigation/data/models/transport_option_model.dart';
 
 class DiscoveryCardModel {
   final String? id;
@@ -17,11 +18,12 @@ class DiscoveryCardModel {
   final List<String> galleryImages;
   final String year;
   final bool isVerified;
-  
+
   // Location & Navigation
   final double? latitude;
   final double? longitude;
-  final List<String> busIds;
+  final List<String> busIds; // Deprecated - kept for backward compatibility
+  final List<TransportOption> transportOptions;
 
   DiscoveryCardModel({
     this.id,
@@ -41,6 +43,7 @@ class DiscoveryCardModel {
     this.latitude,
     this.longitude,
     this.busIds = const [],
+    this.transportOptions = const [],
   });
 
   factory DiscoveryCardModel.fromFirestore(DocumentSnapshot doc) {
@@ -54,7 +57,9 @@ class DiscoveryCardModel {
       type: data['type'] ?? 'steam_style',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       price: (data['price'] ?? 0.0).toDouble(),
-      originalPrice: data['originalPrice'] != null ? (data['originalPrice'] as num).toDouble() : null,
+      originalPrice: data['originalPrice'] != null
+          ? (data['originalPrice'] as num).toDouble()
+          : null,
       rating: (data['rating'] ?? 0.0).toDouble(),
       description: data['description'] ?? '',
       galleryImages: List<String>.from(data['galleryImages'] ?? []),
@@ -63,6 +68,11 @@ class DiscoveryCardModel {
       latitude: data['latitude']?.toDouble(),
       longitude: data['longitude']?.toDouble(),
       busIds: List<String>.from(data['busIds'] ?? []),
+      transportOptions: (data['transport_options'] as List<dynamic>?)
+              ?.map((item) =>
+                  TransportOption.fromMap(item as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 
@@ -84,6 +94,8 @@ class DiscoveryCardModel {
       'latitude': latitude,
       'longitude': longitude,
       'busIds': busIds,
+      'transport_options':
+          transportOptions.map((option) => option.toMap()).toList(),
     };
   }
 }

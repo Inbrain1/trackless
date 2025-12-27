@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart' as google_maps;
 import 'package:untitled2/features/3_shell_navigation/data/datasources/discovery_service.dart';
 import 'package:untitled2/features/3_shell_navigation/data/models/discovery_card_model_new.dart';
+import 'package:untitled2/features/3_shell_navigation/data/models/transport_option_model.dart';
 import 'package:untitled2/core/di/service_locator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:untitled2/features/3_shell_navigation/presentation/screens/location_picker_screen.dart';
@@ -31,7 +33,7 @@ class _CreateCardScreenState extends State<CreateCardScreen> {
   // Location fields
   double? _latitude;
   double? _longitude;
-  List<String> _busIds = [];
+  List<TransportOption> _transportOptions = [];
 
   String _selectedType = 'steam_style';
   bool _isLoading = false;
@@ -69,7 +71,8 @@ class _CreateCardScreenState extends State<CreateCardScreen> {
           isVerified: _isVerified,
           latitude: _latitude,
           longitude: _longitude,
-          busIds: _busIds,
+          busIds: [], // Deprecated field, keeping empty for backward compatibility
+          transportOptions: _transportOptions,
         );
 
         await _discoveryService.addDiscoveryCard(card);
@@ -154,34 +157,47 @@ class _CreateCardScreenState extends State<CreateCardScreen> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () async {
-                    final result = await Navigator.push<LocationResult>(
+                    final result = await Navigator.push<dynamic>(
                       context,
-                      MaterialPageRoute(builder: (context) => const LocationPickerScreen()),
+                      MaterialPageRoute(
+                          builder: (context) => const LocationPickerScreen()),
                     );
 
-                    if (result != null) {
+                    // Result is a List containing [LatLng location, List<TransportOption> options]
+                    if (result != null &&
+                        result is List &&
+                        result.length == 2) {
+                      final location = result[0] as google_maps.LatLng;
+                      final transportOptions =
+                          result[1] as List<TransportOption>;
+
                       setState(() {
-                        _latitude = result.location.latitude;
-                        _longitude = result.location.longitude;
-                        _busIds = result.busNames;
+                        _latitude = location.latitude;
+                        _longitude = location.longitude;
+                        _transportOptions = transportOptions;
                       });
-                      
+
                       ScaffoldMessenger.of(context).showSnackBar(
-                         SnackBar(content: Text('Ubicación definida (${result.busNames.length} buses)')),
+                        SnackBar(
+                            content: Text(
+                                '✓ ${transportOptions.length} rutas curadas')),
                       );
                     }
                   },
-                  icon: Icon(_latitude != null ? Icons.check : Icons.map, color: Colors.white),
+                  icon: Icon(_latitude != null ? Icons.check : Icons.map,
+                      color: Colors.white),
                   label: Text(
-                    _latitude != null 
-                        ? 'Ubicación Definida y ${_busIds.length} Buses' 
+                    _latitude != null
+                        ? '✓ Ubicación y ${_transportOptions.length} Rutas Curadas'
                         : 'Definir Ubicación (Cómo llegar)',
                     style: const TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _latitude != null ? Colors.green : Colors.blueAccent,
+                    backgroundColor:
+                        _latitude != null ? Colors.green : Colors.blueAccent,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
               ),
@@ -190,27 +206,27 @@ class _CreateCardScreenState extends State<CreateCardScreen> {
               // --- TAG ---
               Row(
                 children: [
-                   Container(
-                     height: 40,
-                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                     decoration: BoxDecoration(
-                       borderRadius: BorderRadius.circular(20),
-                       border: Border.all(color: Colors.white),
-                     ),
-                     child: IntrinsicWidth(
-                       child: TextField(
-                         controller: _tagController,
-                         style: const TextStyle(color: Colors.white),
-                         decoration: const InputDecoration(
-                           hintText: 'Tag +',
-                           hintStyle: TextStyle(color: Colors.white70),
-                           border: InputBorder.none,
-                           contentPadding: EdgeInsets.symmetric(vertical: 10),
-                           isDense: true,
-                         ),
-                       ),
-                     ),
-                   ),
+                  Container(
+                    height: 40,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white),
+                    ),
+                    child: IntrinsicWidth(
+                      child: TextField(
+                        controller: _tagController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          hintText: 'Tag +',
+                          hintStyle: TextStyle(color: Colors.white70),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 10),
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
@@ -229,7 +245,7 @@ class _CreateCardScreenState extends State<CreateCardScreen> {
               const SizedBox(height: 12),
 
               // --- GALLERY UPLOAD (Secondary) ---
-              // For now simpler logic: just another way to verify image uploads logic, 
+              // For now simpler logic: just another way to verify image uploads logic,
               // maybe we can skip actual functional gallery list and just show the box as visual
               _buildUploadBox(
                 label: 'Upload Gallery Image',
@@ -256,47 +272,62 @@ class _CreateCardScreenState extends State<CreateCardScreen> {
 
               // --- EXPANDABLE ADVANCED OPTIONS (Price, Type, etc) ---
               ExpansionTile(
-                title: const Text('Advanced Options', style: TextStyle(color: Colors.white70)),
+                title: const Text('Advanced Options',
+                    style: TextStyle(color: Colors.white70)),
                 iconColor: Colors.white70,
                 collapsedIconColor: Colors.white70,
                 children: [
-                   Padding(
-                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                     child: Column(
-                       children: [
-                         Row(
-                           children: [
-                             Expanded(child: _buildDarkTextField(controller: _priceController, label: 'Price')),
-                             const SizedBox(width: 10),
-                             Expanded(child: _buildDarkTextField(controller: _originalPriceController, label: 'Orig. Price')),
-                           ],
-                         ),
-                         const SizedBox(height: 10),
-                         SwitchListTile(
-                            title: const Text('Verified', style: TextStyle(color: Colors.white)),
-                            value: _isVerified,
-                            activeColor: Colors.white,
-                            onChanged: (val) => setState(() => _isVerified = val),
-                         ),
-                          DropdownButtonFormField<String>(
-                            dropdownColor: const Color(0xFF1A1A1A),
-                            value: _selectedType,
-                            style: const TextStyle(color: Colors.white),
-                            items: const [
-                              DropdownMenuItem(value: 'steam_style', child: Text('Steam Style')),
-                              DropdownMenuItem(value: 'popular', child: Text('Popular')),
-                              DropdownMenuItem(value: 'carousel', child: Text('Carousel Highlight')),
-                            ],
-                            onChanged: (v) => setState(() => _selectedType = v!),
-                            decoration: const InputDecoration(
-                              labelText: 'Type',
-                              labelStyle: TextStyle(color: Colors.white70),
-                              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white54)),
-                            ),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                                child: _buildDarkTextField(
+                                    controller: _priceController,
+                                    label: 'Price')),
+                            const SizedBox(width: 10),
+                            Expanded(
+                                child: _buildDarkTextField(
+                                    controller: _originalPriceController,
+                                    label: 'Orig. Price')),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        SwitchListTile(
+                          title: const Text('Verified',
+                              style: TextStyle(color: Colors.white)),
+                          value: _isVerified,
+                          activeColor: Colors.white,
+                          onChanged: (val) => setState(() => _isVerified = val),
+                        ),
+                        DropdownButtonFormField<String>(
+                          dropdownColor: const Color(0xFF1A1A1A),
+                          value: _selectedType,
+                          style: const TextStyle(color: Colors.white),
+                          items: const [
+                            DropdownMenuItem(
+                                value: 'steam_style',
+                                child: Text('Steam Style')),
+                            DropdownMenuItem(
+                                value: 'popular', child: Text('Popular')),
+                            DropdownMenuItem(
+                                value: 'carousel',
+                                child: Text('Carousel Highlight')),
+                          ],
+                          onChanged: (v) => setState(() => _selectedType = v!),
+                          decoration: const InputDecoration(
+                            labelText: 'Type',
+                            labelStyle: TextStyle(color: Colors.white70),
+                            enabledBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white54)),
                           ),
-                       ],
-                     ),
-                   )
+                        ),
+                      ],
+                    ),
+                  )
                 ],
               ),
               const SizedBox(height: 30),
@@ -343,7 +374,8 @@ class _CreateCardScreenState extends State<CreateCardScreen> {
           border: Border.all(color: Colors.white),
           // If image is set, show it
           image: controller.text.isNotEmpty
-              ? DecorationImage(image: NetworkImage(controller.text), fit: BoxFit.cover)
+              ? DecorationImage(
+                  image: NetworkImage(controller.text), fit: BoxFit.cover)
               : null,
         ),
         child: controller.text.isNotEmpty
@@ -356,8 +388,9 @@ class _CreateCardScreenState extends State<CreateCardScreen> {
                     'assets/uplogad.png',
                     width: 50,
                     height: 50,
-                    color: Colors.white, 
-                    errorBuilder: (c, e, s) => const Icon(Icons.upload, color: Colors.white, size: 50),
+                    color: Colors.white,
+                    errorBuilder: (c, e, s) =>
+                        const Icon(Icons.upload, color: Colors.white, size: 50),
                   ),
                 ],
               ),
@@ -374,10 +407,11 @@ class _CreateCardScreenState extends State<CreateCardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (label.isNotEmpty && !label.startsWith('.')) 
+        if (label.isNotEmpty && !label.startsWith('.'))
           Padding(
             padding: const EdgeInsets.only(bottom: 5.0),
-            child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
+            child: Text(label,
+                style: const TextStyle(color: Colors.white, fontSize: 16)),
           ),
         Container(
           decoration: const BoxDecoration(
@@ -386,7 +420,7 @@ class _CreateCardScreenState extends State<CreateCardScreen> {
           child: TextFormField(
             controller: controller,
             style: TextStyle(
-              color: Colors.white, 
+              color: Colors.white,
               fontSize: isTitle ? 22 : 16,
               fontWeight: isTitle ? FontWeight.bold : FontWeight.normal,
             ),
@@ -410,40 +444,41 @@ class _CreateCardScreenState extends State<CreateCardScreen> {
     IconData? icon,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.white),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Column(
-        children: [
-           Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
-           SizedBox(
-             height: 30,
-             child: Row(
-               mainAxisAlignment: MainAxisAlignment.center,
-               children: [
-                 if (icon != null) ...[
-                   Icon(icon, color: Colors.yellow, size: 16),
-                   const SizedBox(width: 4),
-                 ],
-                 Expanded(
-                   child: TextField(
-                     controller: controller,
-                     textAlign: TextAlign.center,
-                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                     decoration: const InputDecoration(
-                       border: InputBorder.none,
-                       isDense: true,
-                     ),
-                   ),
-                 ),
-               ],
-             ),
-           )
-        ],
-      )
-    );
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.white),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Column(
+          children: [
+            Text(label,
+                style: const TextStyle(color: Colors.white, fontSize: 12)),
+            SizedBox(
+              height: 30,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, color: Colors.yellow, size: 16),
+                    const SizedBox(width: 4),
+                  ],
+                  Expanded(
+                    child: TextField(
+                      controller: controller,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ));
   }
 
   Future<void> _showUrlDialog(TextEditingController controller) async {
@@ -452,14 +487,16 @@ class _CreateCardScreenState extends State<CreateCardScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text('Enter Image URL', style: TextStyle(color: Colors.white)),
+        title: const Text('Enter Image URL',
+            style: TextStyle(color: Colors.white)),
         content: TextField(
           controller: urlController,
           style: const TextStyle(color: Colors.white),
           decoration: const InputDecoration(
             hintText: 'https://...',
             hintStyle: TextStyle(color: Colors.white54),
-            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+            enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white)),
           ),
         ),
         actions: [
