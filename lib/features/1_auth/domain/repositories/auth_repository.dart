@@ -13,6 +13,7 @@ abstract class AuthRepository {
     required String email,
     required String password,
     required String role,
+    String name = 'Usuario',
   });
 
   // Cierra la sesión actual.
@@ -20,4 +21,7 @@ abstract class AuthRepository {
 
   // Obtiene los detalles de un usuario desde Firestore.
   Future<User?> getUserDetails(String uid);
+
+  // Inicia sesión de forma anónima (Guest Mode)
+  Future<User?> signInAnonymously();
 }

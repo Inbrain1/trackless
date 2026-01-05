@@ -1,48 +1,150 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled2/core/ui/input_decorations.dart';
 import 'package:untitled2/features/1_auth/presentation/bloc/auth_bloc.dart';
 import 'package:untitled2/features/1_auth/presentation/bloc/auth_event.dart';
 import 'package:untitled2/features/1_auth/presentation/bloc/auth_state.dart';
-import 'package:untitled2/features/1_auth/presentation/widgets/auth_background.dart';
-import 'package:untitled2/features/1_auth/presentation/widgets/card_container.dart';
+import 'package:untitled2/features/1_auth/presentation/widgets/glass_text_field.dart';
+import 'package:untitled2/features/1_auth/presentation/widgets/gradient_auth_button.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Gradient Background
     return Scaffold(
-      body: AuthBackground(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 250),
-              CardContainer(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    Text('Login', style: Theme.of(context).textTheme.headlineMedium),
-                    const SizedBox(height: 30),
-                    const _LoginForm(),
-                  ],
-                ),
+      body: Stack(
+        children: [
+          // 1. Base Gradient Layer
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF2E1C44), // Deep Purple
+                  Color(0xFF1E1E1E), // Black/Dark Grey
+                  Color(0xFF0D0D0D), // Almost Black
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(height: 50),
-              TextButton(
-                onPressed: () => context.go('/register'),
-                style: ButtonStyle(
-                  overlayColor: WidgetStateProperty.all(Colors.indigo.withOpacity(0.1)),
-                  shape: WidgetStateProperty.all(const StadiumBorder()),
-                ),
-                child: const Text('Crear una nueva cuenta', style: TextStyle(fontSize: 18, color: Colors.black87)),
-              ),
-              const SizedBox(height: 50),
-            ],
+            ),
           ),
-        ),
+          
+          // 2. Abstract Blurs (simulated lights)
+          Positioned(
+            top: -100,
+            left: -50,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.purpleAccent.withValues(alpha: 0.3),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -50,
+            right: -50,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blueAccent.withValues(alpha: 0.2),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+          ),
+
+          // 3. Main Content
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Container(
+                    width: double.infinity,
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    padding: const EdgeInsets.all(30),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                         BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Avatar Icon
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Colors.white70,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        
+                        // Login Form
+                        const _LoginForm(),
+                        
+                        const SizedBox(height: 20),
+                        
+                        // Register Link
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              "Need Account? ",
+                              style: TextStyle(color: Colors.white60),
+                            ),
+                            GestureDetector(
+                               onTap: () => context.go('/register'),
+                               child: const Text(
+                                "Register",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -84,7 +186,6 @@ class _LoginFormState extends State<_LoginForm> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.unauthenticated && state.message.isNotEmpty) {
-          // Mostrar Snackbar si hay un error
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(content: Text(state.message)));
@@ -92,57 +193,62 @@ class _LoginFormState extends State<_LoginForm> {
             _isLoading = false;
           });
         }
-        // La navegación la manejará el GoRouter automáticamente
       },
       child: Form(
         key: _formKey,
         autovalidateMode: AutovalidateMode.onUserInteraction,
         child: Column(
           children: [
-            TextFormField(
+            GlassTextField(
               controller: _emailController,
-              autocorrect: false,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecorations.authInputDecoration(
-                hintText: 'john.doe@gmail.com',
-                labelText: 'Correo electrónico',
-                prefixIcon: Icons.alternate_email_rounded,
-              ),
+              hintText: 'Email ID',
+              prefixIcon: Icons.email_outlined,
               validator: (value) {
-                String pattern = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-                RegExp regExp = RegExp(pattern);
-                return regExp.hasMatch(value ?? '') ? null : 'El correo no es válido';
+                if (value == null || value.isEmpty) return 'Este campo es obligatorio';
+                return null;
               },
             ),
-            const SizedBox(height: 30),
-            TextFormField(
+            const SizedBox(height: 20),
+            GlassTextField(
               controller: _passwordController,
-              autocorrect: false,
+              hintText: 'Password',
+              prefixIcon: Icons.lock_outline,
               obscureText: true,
-              decoration: InputDecorations.authInputDecoration(
-                hintText: '*****',
-                labelText: 'Contraseña',
-                prefixIcon: Icons.lock_outline,
-              ),
               validator: (value) {
-                return (value != null && value.length >= 6) ? null : 'La contraseña debe tener al menos 6 caracteres';
+                return (value != null && value.length >= 6)
+                    ? null
+                    : 'La contraseña debe tener al menos 6 caracteres';
               },
             ),
-            const SizedBox(height: 30),
-            MaterialButton(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              disabledColor: Colors.grey,
-              elevation: 0,
-              color: Colors.deepPurple,
-              onPressed: _isLoading ? null : _submit,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
-                child: Text(
-                  _isLoading ? 'Espere' : 'Ingresar',
-                  style: const TextStyle(color: Colors.white),
+            
+            // Remember me and Forgot Password Row (Simulated to match visual, focusing on Layout)
+            // User asked to REMOVE forgot password, but keep "Remember Me" maybe?
+            // "y aparte elimina el botton de de forgot passowrd" -> Remove forgot password.
+            // "agregando los bototnes y que ya estavan" -> Keep buttons.
+            
+            const SizedBox(height: 40),
+            
+            GradientAuthButton(
+              text: 'LOGIN',
+              isLoading: _isLoading,
+              onPressed: _submit,
+            ),
+            
+            const SizedBox(height: 16),
+            
+            TextButton(
+              onPressed: () {
+                context.read<AuthBloc>().add(GuestLoginRequested());
+              },
+              child: const Text(
+                'Continuar como Invitado',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                  decoration: TextDecoration.underline,
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

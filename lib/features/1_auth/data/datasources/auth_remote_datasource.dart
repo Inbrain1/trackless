@@ -9,9 +9,11 @@ abstract class AuthRemoteDataSource {
     required String email,
     required String password,
     required String role,
+    required String name, // Add name
   });
   Future<void> signOut();
   Future<UserModel?> getUserDetails(String uid);
+  Future<UserModel?> signInAnonymously();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -56,6 +58,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String email,
     required String password,
     required String role,
+    required String name, // Add name
   }) async {
     try {
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
@@ -70,6 +73,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           uid: user.uid,
           email: email,
           role: role,
+          name: name, // Save name
         );
 
         // Guardar los detalles del usuario en la colección 'users'
@@ -104,6 +108,27 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (e) {
       print(
           'DEBUG AuthRemoteDataSource: Error in getUserDetails (Firestore): $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<UserModel?> signInAnonymously() async {
+    try {
+      final userCredential = await _firebaseAuth.signInAnonymously();
+      final user = userCredential.user;
+      if (user != null) {
+        // Return a temporary user model for guests
+        return UserModel(
+          uid: user.uid,
+          email: 'guest@trackless.com',
+          role: 'Guest',
+          name: 'Invitado',
+        );
+      }
+      return null;
+    } catch (e) {
+      print('DEBUG AuthRemoteDataSource: Error in signInAnonymously: $e');
       return null;
     }
   }

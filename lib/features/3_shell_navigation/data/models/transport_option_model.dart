@@ -4,11 +4,19 @@ class TransportOption {
   final String busId;
   final String busName;
   final List<BusStopRecommendation> recommendedStops;
+  
+  // NUEVO: Ubicación del destino (Discovery Card)
+  final String? destinationName;
+  final double? destinationLat;
+  final double? destinationLng;
 
   TransportOption({
     required this.busId,
     required this.busName,
     required this.recommendedStops,
+    this.destinationName, // NUEVO
+    this.destinationLat,  // NUEVO
+    this.destinationLng,  // NUEVO
   });
 
   factory TransportOption.fromMap(Map<String, dynamic> map) {
@@ -21,6 +29,9 @@ class TransportOption {
                   BusStopRecommendation.fromMap(stop as Map<String, dynamic>))
               .toList() ??
           [],
+      destinationName: map['destination_name'], // NUEVO
+      destinationLat: map['destination_lat']?.toDouble(), // NUEVO
+      destinationLng: map['destination_lng']?.toDouble(), // NUEVO
     );
   }
 
@@ -30,6 +41,9 @@ class TransportOption {
       'bus_name': busName,
       'recommended_stops':
           recommendedStops.map((stop) => stop.toMap()).toList(),
+      'destination_name': destinationName, // NUEVO
+      'destination_lat': destinationLat,   // NUEVO
+      'destination_lng': destinationLng,   // NUEVO
     };
   }
 }

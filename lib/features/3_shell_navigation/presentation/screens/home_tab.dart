@@ -2,7 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../../../features/1_auth/presentation/bloc/auth_bloc.dart';
+import '../../../../features/1_auth/presentation/bloc/auth_event.dart';
 import '../widgets/account_modal.dart';
 
 // DEFINIMOS LA PALETA DE COLORES EXACTA DE TU DISEÑO
@@ -64,22 +67,57 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   Widget _buildCustomHeader(BuildContext context) {
+    // Access AuthState to check for guest mode
+    final authState = context.watch<AuthBloc>().state;
+    final isGuest = authState.isGuest;
+    final userName = isGuest ? 'Invitado' : (authState.user?.name ?? 'Ibrain'); // Fallback to Ibrain if no name
+    
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
         children: [
           GestureDetector(
             onTap: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => Padding(
-                  padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).padding.top + 30),
-                  child: const AccountModal(),
-                ),
-              );
+              if (isGuest) {
+                // Show simple login prompt for guests
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: const Color(0xFF2C2C2C),
+                    title: const Text('Modo Invitado', style: TextStyle(color: Colors.white)),
+                    content: const Text(
+                      'Estás navegando como invitado. Inicia sesión para acceder a todas las funciones.',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancelar', style: TextStyle(color: Colors.white54)),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context); // Close dialog
+                          // Sign out to go back to login screen (Guest is a state of auth)
+                           context.read<AuthBloc>().add(SignOutRequested());
+                        },
+                        child: const Text('Iniciar Sesión', style: TextStyle(color: azulPrincipal)),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                // Show full account modal for logged in users
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => Padding(
+                    padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).padding.top + 30),
+                    child: const AccountModal(),
+                  ),
+                );
+              }
             },
             child: Container(
               decoration: BoxDecoration(
@@ -87,7 +125,7 @@ class _HomeTabState extends State<HomeTab> {
                 border: Border.all(color: Colors.white24, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2), // FIX: withOpacity deprecated
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -101,10 +139,10 @@ class _HomeTabState extends State<HomeTab> {
             ),
           ),
           const SizedBox(width: 12),
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Bienvenido,',
                 style: TextStyle(
                   color: textoSecundario,
@@ -112,8 +150,8 @@ class _HomeTabState extends State<HomeTab> {
                 ),
               ),
               Text(
-                'Ibrain',
-                style: TextStyle(
+                userName,
+                style: const TextStyle(
                   color: textoPrincipal,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -171,7 +209,7 @@ class _HomeTabState extends State<HomeTab> {
         children: [
           _buildFeatureCard(
             icon: FontAwesomeIcons.locationDot,
-            title: 'Ubicación en Tiempo Real',
+            title: 'Ver Rutas y Paraderos',
             subtitle: 'Localiza tu bus más cercano',
           ),
           _buildFeatureCard(
@@ -206,7 +244,7 @@ class _HomeTabState extends State<HomeTab> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1), // FIX: withOpacity deprecated
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -220,7 +258,7 @@ class _HomeTabState extends State<HomeTab> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05), // FIX: withOpacity deprecated
               borderRadius: BorderRadius.circular(12),
             ),
             child: FaIcon(icon, color: azulPrincipal, size: 24),
@@ -320,7 +358,7 @@ class _HomeTabState extends State<HomeTab> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3), // FIX: withOpacity deprecated
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -337,10 +375,10 @@ class _HomeTabState extends State<HomeTab> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.black.withOpacity(0.1),
+                Colors.black.withValues(alpha: 0.1),
                 Colors.transparent,
-                Colors.black.withOpacity(0.7),
-                Colors.black.withOpacity(0.9),
+                Colors.black.withValues(alpha: 0.7),
+                Colors.black.withValues(alpha: 0.9), // FIX: withOpacity deprecated
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,

@@ -4,11 +4,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class MapWidget extends StatefulWidget {
   final LatLng initialPosition;
   final Set<Marker> markers;
+  final Set<Polyline> polylines; // NUEVO: Polylines para mostrar rutas
   final Function(GoogleMapController) onMapCreated;
 
   const MapWidget({super.key, 
     required this.initialPosition,
     required this.markers,
+    required this.polylines, // NUEVO: Parámetro requerido
     required this.onMapCreated,
   });
 
@@ -28,6 +30,7 @@ class _MapWidgetState extends State<MapWidget> {
         zoom: 14.0,
       ),
       markers: widget.markers,
+      polylines: widget.polylines, // NUEVO: Mostrar polylines en el mapa
     );
   }
 }

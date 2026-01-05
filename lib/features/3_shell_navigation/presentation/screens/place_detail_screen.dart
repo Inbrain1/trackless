@@ -9,6 +9,7 @@ import 'package:untitled2/features/2_map_view/presentation/bloc/map_event.dart';
 import 'package:untitled2/features/3_shell_navigation/data/datasources/discovery_service.dart';
 import 'package:untitled2/features/3_shell_navigation/data/models/discovery_card_model_new.dart';
 import 'package:untitled2/screens/consumer/transport_options_screen.dart';
+import 'package:untitled2/features/3_shell_navigation/presentation/screens/create_card_screen.dart'; // Added Import
 
 class PlaceDetailScreen extends StatefulWidget {
   final DiscoveryCardModel card;
@@ -125,7 +126,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              const Color(0xFF1A1A1A).withOpacity(0.5),
+                              const Color(0xFF1A1A1A).withValues(alpha: 0.5),
                               const Color(0xFF1A1A1A),
                             ],
                             stops: const [0.5, 0.8, 1.0],
@@ -143,11 +144,64 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   // --- DELETE BUTTON (Development Only) ---
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
-                      if (state.user?.role == 'Development') {
-                        return IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _deleteCard(context),
-                        );
+                      // Only show admin actions if user is NOT guest AND has Development role
+                      if (!state.isGuest && state.user?.role == 'Development') {
+                          return Row(
+                            children: [
+                              // Edit button
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blueAccent),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CreateCardScreen(cardToEdit: widget.card),
+                                    ),
+                                  );
+                                },
+                              ),
+                              // Duplicate button
+                              IconButton(
+                                icon: const Icon(Icons.content_copy, color: Colors.amber),
+                                tooltip: 'Duplicar',
+                                onPressed: () {
+                                  // Create a copy without ID so it creates a new card
+                                  final duplicatedCard = DiscoveryCardModel(
+                                    title: '${widget.card.title} (Copia)',
+                                    subtitle: widget.card.subtitle,
+                                    imageUrl: widget.card.imageUrl,
+                                    tag: widget.card.tag,
+                                    type: widget.card.type,
+                                    description: widget.card.description,
+                                    price: widget.card.price,
+                                    originalPrice: widget.card.originalPrice,
+                                    rating: widget.card.rating,
+                                    createdAt: DateTime.now(),
+                                    galleryImages: widget.card.galleryImages,
+                                    year: widget.card.year,
+                                    isVerified: widget.card.isVerified,
+                                    isVideo: widget.card.isVideo,
+                                    latitude: widget.card.latitude,
+                                    longitude: widget.card.longitude,
+                                    transportOptions: widget.card.transportOptions,
+                                    id: null, // Explicitly null to ensure a new card is created
+                                  );
+                                  
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CreateCardScreen(cardToEdit: duplicatedCard),
+                                    ),
+                                  );
+                                },
+                              ),
+                              // Delete button
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteCard(context),
+                              ),
+                            ],
+                          );
                       }
                       return const SizedBox.shrink();
                     },
@@ -260,8 +314,9 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                           scrollDirection: Axis.horizontal,
                           physics: const BouncingScrollPhysics(),
                           children: [
-                            _buildVideoThumbnail(widget.card
-                                .imageUrl), // Main image as video thumbnail
+                            widget.card.isVideo
+                                ? _buildVideoThumbnail(widget.card.imageUrl)
+                                : _buildImageThumbnail(widget.card.imageUrl, isMain: true),
                             if (widget.card.galleryImages.isNotEmpty)
                               ...widget.card.galleryImages.map((img) => Padding(
                                     padding: const EdgeInsets.only(left: 12),
@@ -322,7 +377,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   end: Alignment.topCenter,
                   colors: [
                     const Color(0xFF1A1A1A),
-                    const Color(0xFF1A1A1A).withOpacity(0.0),
+                    const Color(0xFF1A1A1A).withValues(alpha: 0.0),
                   ],
                 ),
               ),
@@ -383,6 +438,9 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                               builder: (context) => TransportOptionsScreen(
                                 transportOptions: widget.card.transportOptions,
                                 discoveryCardTitle: widget.card.title,
+                                destinationName: widget.card.title, // NUEVO: Nombre del destino
+                                destinationLat: widget.card.latitude,  // NUEVO: Coordenadas
+                                destinationLng: widget.card.longitude, // NUEVO
                               ),
                             ),
                           );
@@ -404,7 +462,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                         elevation: 8,
-                        shadowColor: Colors.blueAccent.withOpacity(0.5),
+                        shadowColor: Colors.blueAccent.withValues(alpha: 0.5),
                       ),
                       child: const Text(
                         "LLEGAR YA",
@@ -433,7 +491,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isPrimary ? Colors.blueAccent : Colors.grey.withOpacity(0.5),
+          color: isPrimary ? Colors.blueAccent : Colors.grey.withValues(alpha: 0.5),
           width: 1.5,
         ),
       ),
@@ -457,7 +515,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           image: NetworkImage(imageUrl),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(0.4),
+            Colors.black.withValues(alpha: 0.4),
             BlendMode.darken,
           ),
         ),
@@ -466,7 +524,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
             shape: BoxShape.circle,
             border: Border.all(color: Colors.white, width: 2),
           ),
@@ -476,9 +534,9 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     );
   }
 
-  Widget _buildImageThumbnail(String imageUrl) {
+  Widget _buildImageThumbnail(String imageUrl, {bool isMain = false}) {
     return Container(
-      width: 140,
+      width: isMain ? 280 : 140, // Larger if it's the main slot
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
         image: DecorationImage(

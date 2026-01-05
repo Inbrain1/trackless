@@ -100,21 +100,29 @@ class AutoSeeder {
         final routeData = jsonList[i];
         processedCount++;
 
-        final String name = routeData['name']?.toString() ?? '';
-        final String code = routeData['code']?.toString() ?? '';
+        final String name = routeData['name']?.toString().trim() ?? '';
+        final String code = routeData['code']?.toString().trim() ?? '';
 
-        // Handle "REFERENCE" type or normal List
         List<dynamic> routePoints = [];
         final rawRoute = routeData['route'];
 
-        if (rawRoute is Map &&
+        if (rawRoute is List) {
+          for (var item in rawRoute) {
+            if (item is Map &&
+                item['type'] == 'REFERENCE' &&
+                item['value'] == 'culturaRoutes') {
+              print(
+                  'AutoSeeder: Detected inline REFERENCE "culturaRoutes". Injecting ${_culturaRoutesData.length} stops.');
+              routePoints.addAll(_culturaRoutesData);
+            } else {
+              routePoints.add(item);
+            }
+          }
+        } else if (rawRoute is Map &&
             rawRoute['type'] == 'REFERENCE' &&
             rawRoute['value'] == 'culturaRoutes') {
-          print(
-              'AutoSeeder: Detected REFERENCE "culturaRoutes". Injecting hardcoded data.');
+          // Handle case where the entire route is just a reference object (legacy check)
           routePoints = _culturaRoutesData;
-        } else if (rawRoute is List) {
-          routePoints = rawRoute;
         }
 
         if (name.isEmpty) {

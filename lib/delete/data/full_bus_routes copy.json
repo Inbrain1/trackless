@@ -165,8 +165,116 @@
         }
       },
       {
-        "type": "REFERENCE",
-        "value": "culturaRoutes"
+        "name": "Garcilaso",
+        "location": {
+          "lat": -13.521317532907313,
+          "lng": -71.96651320899271
+        }
+      },
+      {
+        "name": "Amauta",
+        "location": {
+          "lat": -13.522359303212086,
+          "lng": -71.9631560083819
+        }
+      },
+      {
+        "name": "Universidad San Antonnio de Abad",
+        "location": {
+          "lat": -13.52347720169373,
+          "lng": -71.95948577846217
+        }
+      },
+      {
+        "name": "Hospital Regional",
+        "location": {
+          "lat": -13.524473967615657,
+          "lng": -71.95626285928323
+        }
+      },
+      {
+        "name": "Manuel Prado",
+        "location": {
+          "lat": -13.525736587902498,
+          "lng": -71.95196221699389
+        }
+      },
+      {
+        "name": "Magisterio",
+        "location": {
+          "lat": -13.526705866234407,
+          "lng": -71.94887952422619
+        }
+      },
+      {
+        "name": "Marcavalle",
+        "location": {
+          "lat": -13.527464308545843,
+          "lng": -71.94615587236648
+        }
+      },
+      {
+        "name": "Santa Ursula",
+        "location": {
+          "lat": -13.527795690068562,
+          "lng": -71.94333863965413
+        }
+      },
+      {
+        "name": "1er Paradero SS",
+        "location": {
+          "lat": -13.528193249388455,
+          "lng": -71.94018526301657
+        }
+      },
+      {
+        "name": "Callejón",
+        "location": {
+          "lat": -13.528728880776407,
+          "lng": -71.93834060938691
+        }
+      },
+      {
+        "name": "2do Paradero SS",
+        "location": {
+          "lat": -13.529330563309049,
+          "lng": -71.9362245362867
+        }
+      },
+      {
+        "name": "3er Paradero SS",
+        "location": {
+          "lat": -13.529658446725437,
+          "lng": -71.93496250356029
+        }
+      },
+      {
+        "name": "4to Paradero SS",
+        "location": {
+          "lat": -13.530284676783914,
+          "lng": -71.93280987118418
+        }
+      },
+      {
+        "name": "5to Paradero SS",
+        "location": {
+          "lat": -13.531073107156718,
+          "lng": -71.93009082154326
+        }
+      },
+      {
+        "name": "6to Paradero SS",
+        "location": {
+          "lat": -13.53150618723304,
+          "lng": -71.92835825349091
+        }
+      },
+      {
+        "name": "7mo Paradero SS",
+        "location": {
+          "lat": -13.53229298699121,
+          "lng": -71.92571276515717
+        }
       },
       {
         "name": "Camionero",
@@ -2363,8 +2471,116 @@
         }
       },
       {
-        "type": "REFERENCE",
-        "value": "culturaRoutes"
+        "name": "Garcilaso",
+        "location": {
+          "lat": -13.521317532907313,
+          "lng": -71.96651320899271
+        }
+      },
+      {
+        "name": "Amauta",
+        "location": {
+          "lat": -13.522359303212086,
+          "lng": -71.9631560083819
+        }
+      },
+      {
+        "name": "Universidad San Antonnio de Abad",
+        "location": {
+          "lat": -13.52347720169373,
+          "lng": -71.95948577846217
+        }
+      },
+      {
+        "name": "Hospital Regional",
+        "location": {
+          "lat": -13.524473967615657,
+          "lng": -71.95626285928323
+        }
+      },
+      {
+        "name": "Manuel Prado",
+        "location": {
+          "lat": -13.525736587902498,
+          "lng": -71.95196221699389
+        }
+      },
+      {
+        "name": "Magisterio",
+        "location": {
+          "lat": -13.526705866234407,
+          "lng": -71.94887952422619
+        }
+      },
+      {
+        "name": "Marcavalle",
+        "location": {
+          "lat": -13.527464308545843,
+          "lng": -71.94615587236648
+        }
+      },
+      {
+        "name": "Santa Ursula",
+        "location": {
+          "lat": -13.527795690068562,
+          "lng": -71.94333863965413
+        }
+      },
+      {
+        "name": "1er Paradero SS",
+        "location": {
+          "lat": -13.528193249388455,
+          "lng": -71.94018526301657
+        }
+      },
+      {
+        "name": "Callejón",
+        "location": {
+          "lat": -13.528728880776407,
+          "lng": -71.93834060938691
+        }
+      },
+      {
+        "name": "2do Paradero SS",
+        "location": {
+          "lat": -13.529330563309049,
+          "lng": -71.9362245362867
+        }
+      },
+      {
+        "name": "3er Paradero SS",
+        "location": {
+          "lat": -13.529658446725437,
+          "lng": -71.93496250356029
+        }
+      },
+      {
+        "name": "4to Paradero SS",
+        "location": {
+          "lat": -13.530284676783914,
+          "lng": -71.93280987118418
+        }
+      },
+      {
+        "name": "5to Paradero SS",
+        "location": {
+          "lat": -13.531073107156718,
+          "lng": -71.93009082154326
+        }
+      },
+      {
+        "name": "6to Paradero SS",
+        "location": {
+          "lat": -13.53150618723304,
+          "lng": -71.92835825349091
+        }
+      },
+      {
+        "name": "7mo Paradero SS",
+        "location": {
+          "lat": -13.53229298699121,
+          "lng": -71.92571276515717
+        }
       },
       {
         "name": "Camionero",
@@ -4323,8 +4539,116 @@
         }
       },
       {
-        "type": "REFERENCE",
-        "value": "culturaRoutes"
+        "name": "Garcilaso",
+        "location": {
+          "lat": -13.521317532907313,
+          "lng": -71.96651320899271
+        }
+      },
+      {
+        "name": "Amauta",
+        "location": {
+          "lat": -13.522359303212086,
+          "lng": -71.9631560083819
+        }
+      },
+      {
+        "name": "Universidad San Antonnio de Abad",
+        "location": {
+          "lat": -13.52347720169373,
+          "lng": -71.95948577846217
+        }
+      },
+      {
+        "name": "Hospital Regional",
+        "location": {
+          "lat": -13.524473967615657,
+          "lng": -71.95626285928323
+        }
+      },
+      {
+        "name": "Manuel Prado",
+        "location": {
+          "lat": -13.525736587902498,
+          "lng": -71.95196221699389
+        }
+      },
+      {
+        "name": "Magisterio",
+        "location": {
+          "lat": -13.526705866234407,
+          "lng": -71.94887952422619
+        }
+      },
+      {
+        "name": "Marcavalle",
+        "location": {
+          "lat": -13.527464308545843,
+          "lng": -71.94615587236648
+        }
+      },
+      {
+        "name": "Santa Ursula",
+        "location": {
+          "lat": -13.527795690068562,
+          "lng": -71.94333863965413
+        }
+      },
+      {
+        "name": "1er Paradero SS",
+        "location": {
+          "lat": -13.528193249388455,
+          "lng": -71.94018526301657
+        }
+      },
+      {
+        "name": "Callejón",
+        "location": {
+          "lat": -13.528728880776407,
+          "lng": -71.93834060938691
+        }
+      },
+      {
+        "name": "2do Paradero SS",
+        "location": {
+          "lat": -13.529330563309049,
+          "lng": -71.9362245362867
+        }
+      },
+      {
+        "name": "3er Paradero SS",
+        "location": {
+          "lat": -13.529658446725437,
+          "lng": -71.93496250356029
+        }
+      },
+      {
+        "name": "4to Paradero SS",
+        "location": {
+          "lat": -13.530284676783914,
+          "lng": -71.93280987118418
+        }
+      },
+      {
+        "name": "5to Paradero SS",
+        "location": {
+          "lat": -13.531073107156718,
+          "lng": -71.93009082154326
+        }
+      },
+      {
+        "name": "6to Paradero SS",
+        "location": {
+          "lat": -13.53150618723304,
+          "lng": -71.92835825349091
+        }
+      },
+      {
+        "name": "7mo Paradero SS",
+        "location": {
+          "lat": -13.53229298699121,
+          "lng": -71.92571276515717
+        }
       },
       {
         "name": "Camionero",
@@ -5543,8 +5867,116 @@
         }
       },
       {
-        "type": "REFERENCE",
-        "value": "culturaRoutes"
+        "name": "Garcilaso",
+        "location": {
+          "lat": -13.521317532907313,
+          "lng": -71.96651320899271
+        }
+      },
+      {
+        "name": "Amauta",
+        "location": {
+          "lat": -13.522359303212086,
+          "lng": -71.9631560083819
+        }
+      },
+      {
+        "name": "Universidad San Antonnio de Abad",
+        "location": {
+          "lat": -13.52347720169373,
+          "lng": -71.95948577846217
+        }
+      },
+      {
+        "name": "Hospital Regional",
+        "location": {
+          "lat": -13.524473967615657,
+          "lng": -71.95626285928323
+        }
+      },
+      {
+        "name": "Manuel Prado",
+        "location": {
+          "lat": -13.525736587902498,
+          "lng": -71.95196221699389
+        }
+      },
+      {
+        "name": "Magisterio",
+        "location": {
+          "lat": -13.526705866234407,
+          "lng": -71.94887952422619
+        }
+      },
+      {
+        "name": "Marcavalle",
+        "location": {
+          "lat": -13.527464308545843,
+          "lng": -71.94615587236648
+        }
+      },
+      {
+        "name": "Santa Ursula",
+        "location": {
+          "lat": -13.527795690068562,
+          "lng": -71.94333863965413
+        }
+      },
+      {
+        "name": "1er Paradero SS",
+        "location": {
+          "lat": -13.528193249388455,
+          "lng": -71.94018526301657
+        }
+      },
+      {
+        "name": "Callejón",
+        "location": {
+          "lat": -13.528728880776407,
+          "lng": -71.93834060938691
+        }
+      },
+      {
+        "name": "2do Paradero SS",
+        "location": {
+          "lat": -13.529330563309049,
+          "lng": -71.9362245362867
+        }
+      },
+      {
+        "name": "3er Paradero SS",
+        "location": {
+          "lat": -13.529658446725437,
+          "lng": -71.93496250356029
+        }
+      },
+      {
+        "name": "4to Paradero SS",
+        "location": {
+          "lat": -13.530284676783914,
+          "lng": -71.93280987118418
+        }
+      },
+      {
+        "name": "5to Paradero SS",
+        "location": {
+          "lat": -13.531073107156718,
+          "lng": -71.93009082154326
+        }
+      },
+      {
+        "name": "6to Paradero SS",
+        "location": {
+          "lat": -13.53150618723304,
+          "lng": -71.92835825349091
+        }
+      },
+      {
+        "name": "7mo Paradero SS",
+        "location": {
+          "lat": -13.53229298699121,
+          "lng": -71.92571276515717
+        }
       },
       {
         "name": "Camionero",
@@ -6937,8 +7369,116 @@
         }
       },
       {
-        "type": "REFERENCE",
-        "value": "culturaRoutes"
+        "name": "Garcilaso",
+        "location": {
+          "lat": -13.521317532907313,
+          "lng": -71.96651320899271
+        }
+      },
+      {
+        "name": "Amauta",
+        "location": {
+          "lat": -13.522359303212086,
+          "lng": -71.9631560083819
+        }
+      },
+      {
+        "name": "Universidad San Antonnio de Abad",
+        "location": {
+          "lat": -13.52347720169373,
+          "lng": -71.95948577846217
+        }
+      },
+      {
+        "name": "Hospital Regional",
+        "location": {
+          "lat": -13.524473967615657,
+          "lng": -71.95626285928323
+        }
+      },
+      {
+        "name": "Manuel Prado",
+        "location": {
+          "lat": -13.525736587902498,
+          "lng": -71.95196221699389
+        }
+      },
+      {
+        "name": "Magisterio",
+        "location": {
+          "lat": -13.526705866234407,
+          "lng": -71.94887952422619
+        }
+      },
+      {
+        "name": "Marcavalle",
+        "location": {
+          "lat": -13.527464308545843,
+          "lng": -71.94615587236648
+        }
+      },
+      {
+        "name": "Santa Ursula",
+        "location": {
+          "lat": -13.527795690068562,
+          "lng": -71.94333863965413
+        }
+      },
+      {
+        "name": "1er Paradero SS",
+        "location": {
+          "lat": -13.528193249388455,
+          "lng": -71.94018526301657
+        }
+      },
+      {
+        "name": "Callejón",
+        "location": {
+          "lat": -13.528728880776407,
+          "lng": -71.93834060938691
+        }
+      },
+      {
+        "name": "2do Paradero SS",
+        "location": {
+          "lat": -13.529330563309049,
+          "lng": -71.9362245362867
+        }
+      },
+      {
+        "name": "3er Paradero SS",
+        "location": {
+          "lat": -13.529658446725437,
+          "lng": -71.93496250356029
+        }
+      },
+      {
+        "name": "4to Paradero SS",
+        "location": {
+          "lat": -13.530284676783914,
+          "lng": -71.93280987118418
+        }
+      },
+      {
+        "name": "5to Paradero SS",
+        "location": {
+          "lat": -13.531073107156718,
+          "lng": -71.93009082154326
+        }
+      },
+      {
+        "name": "6to Paradero SS",
+        "location": {
+          "lat": -13.53150618723304,
+          "lng": -71.92835825349091
+        }
+      },
+      {
+        "name": "7mo Paradero SS",
+        "location": {
+          "lat": -13.53229298699121,
+          "lng": -71.92571276515717
+        }
       },
       {
         "name": "Camionero",
@@ -7681,8 +8221,116 @@
         }
       },
       {
-        "type": "REFERENCE",
-        "value": "culturaRoutes"
+        "name": "Garcilaso",
+        "location": {
+          "lat": -13.521317532907313,
+          "lng": -71.96651320899271
+        }
+      },
+      {
+        "name": "Amauta",
+        "location": {
+          "lat": -13.522359303212086,
+          "lng": -71.9631560083819
+        }
+      },
+      {
+        "name": "Universidad San Antonnio de Abad",
+        "location": {
+          "lat": -13.52347720169373,
+          "lng": -71.95948577846217
+        }
+      },
+      {
+        "name": "Hospital Regional",
+        "location": {
+          "lat": -13.524473967615657,
+          "lng": -71.95626285928323
+        }
+      },
+      {
+        "name": "Manuel Prado",
+        "location": {
+          "lat": -13.525736587902498,
+          "lng": -71.95196221699389
+        }
+      },
+      {
+        "name": "Magisterio",
+        "location": {
+          "lat": -13.526705866234407,
+          "lng": -71.94887952422619
+        }
+      },
+      {
+        "name": "Marcavalle",
+        "location": {
+          "lat": -13.527464308545843,
+          "lng": -71.94615587236648
+        }
+      },
+      {
+        "name": "Santa Ursula",
+        "location": {
+          "lat": -13.527795690068562,
+          "lng": -71.94333863965413
+        }
+      },
+      {
+        "name": "1er Paradero SS",
+        "location": {
+          "lat": -13.528193249388455,
+          "lng": -71.94018526301657
+        }
+      },
+      {
+        "name": "Callejón",
+        "location": {
+          "lat": -13.528728880776407,
+          "lng": -71.93834060938691
+        }
+      },
+      {
+        "name": "2do Paradero SS",
+        "location": {
+          "lat": -13.529330563309049,
+          "lng": -71.9362245362867
+        }
+      },
+      {
+        "name": "3er Paradero SS",
+        "location": {
+          "lat": -13.529658446725437,
+          "lng": -71.93496250356029
+        }
+      },
+      {
+        "name": "4to Paradero SS",
+        "location": {
+          "lat": -13.530284676783914,
+          "lng": -71.93280987118418
+        }
+      },
+      {
+        "name": "5to Paradero SS",
+        "location": {
+          "lat": -13.531073107156718,
+          "lng": -71.93009082154326
+        }
+      },
+      {
+        "name": "6to Paradero SS",
+        "location": {
+          "lat": -13.53150618723304,
+          "lng": -71.92835825349091
+        }
+      },
+      {
+        "name": "7mo Paradero SS",
+        "location": {
+          "lat": -13.53229298699121,
+          "lng": -71.92571276515717
+        }
       },
       {
         "name": "Camionero",
@@ -10345,8 +10993,116 @@
         }
       },
       {
-        "type": "REFERENCE",
-        "value": "culturaRoutes"
+        "name": "Garcilaso",
+        "location": {
+          "lat": -13.521317532907313,
+          "lng": -71.96651320899271
+        }
+      },
+      {
+        "name": "Amauta",
+        "location": {
+          "lat": -13.522359303212086,
+          "lng": -71.9631560083819
+        }
+      },
+      {
+        "name": "Universidad San Antonnio de Abad",
+        "location": {
+          "lat": -13.52347720169373,
+          "lng": -71.95948577846217
+        }
+      },
+      {
+        "name": "Hospital Regional",
+        "location": {
+          "lat": -13.524473967615657,
+          "lng": -71.95626285928323
+        }
+      },
+      {
+        "name": "Manuel Prado",
+        "location": {
+          "lat": -13.525736587902498,
+          "lng": -71.95196221699389
+        }
+      },
+      {
+        "name": "Magisterio",
+        "location": {
+          "lat": -13.526705866234407,
+          "lng": -71.94887952422619
+        }
+      },
+      {
+        "name": "Marcavalle",
+        "location": {
+          "lat": -13.527464308545843,
+          "lng": -71.94615587236648
+        }
+      },
+      {
+        "name": "Santa Ursula",
+        "location": {
+          "lat": -13.527795690068562,
+          "lng": -71.94333863965413
+        }
+      },
+      {
+        "name": "1er Paradero SS",
+        "location": {
+          "lat": -13.528193249388455,
+          "lng": -71.94018526301657
+        }
+      },
+      {
+        "name": "Callejón",
+        "location": {
+          "lat": -13.528728880776407,
+          "lng": -71.93834060938691
+        }
+      },
+      {
+        "name": "2do Paradero SS",
+        "location": {
+          "lat": -13.529330563309049,
+          "lng": -71.9362245362867
+        }
+      },
+      {
+        "name": "3er Paradero SS",
+        "location": {
+          "lat": -13.529658446725437,
+          "lng": -71.93496250356029
+        }
+      },
+      {
+        "name": "4to Paradero SS",
+        "location": {
+          "lat": -13.530284676783914,
+          "lng": -71.93280987118418
+        }
+      },
+      {
+        "name": "5to Paradero SS",
+        "location": {
+          "lat": -13.531073107156718,
+          "lng": -71.93009082154326
+        }
+      },
+      {
+        "name": "6to Paradero SS",
+        "location": {
+          "lat": -13.53150618723304,
+          "lng": -71.92835825349091
+        }
+      },
+      {
+        "name": "7mo Paradero SS",
+        "location": {
+          "lat": -13.53229298699121,
+          "lng": -71.92571276515717
+        }
       },
       {
         "name": "Camionero",
@@ -11419,15 +12175,15 @@
       {
         "name": "Ayacucho",
         "location": {
-          "lat": -13.51948365181845,
-          "lng": -71.97761927589094
+          "lat": -13.52077558926384,
+          "lng": -71.9786412966701
         }
       },
       {
         "name": "El Sol",
         "location": {
-          "lat": -13.519527881754883,
-          "lng": -71.97648569498786
+          "lat": -13.519496847615951,
+          "lng": -71.97763105490671
         }
       },
       {
@@ -12139,7 +12895,7 @@
     ]
   },
   {
-    "name": " Arco Iris",
+    "name": "Arco Iris",
     "code": "RTU-20",
     "route": [
       {

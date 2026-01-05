@@ -89,8 +89,8 @@ class _BusListScreenState extends State<BusListScreen> {
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Buscar ruta...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                prefixIcon: Icon(Icons.search, color: Colors.white.withOpacity(0.7)),
+                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                prefixIcon: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.7)),
                 filled: true,
                 fillColor: Colors.grey.shade900,
                 border: OutlineInputBorder(
@@ -203,7 +203,7 @@ class BusGridCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(20), // Bordes redondeados
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 6,
                   offset: const Offset(0, 4),
                 ),
@@ -227,7 +227,7 @@ class BusGridCard extends StatelessWidget {
                   ),
 
                   // 1.5. Overlay oscuro general para uniformidad
-                  Container(color: Colors.black.withOpacity(0.25)),
+                  Container(color: Colors.black.withValues(alpha: 0.25)),
 
                   // 2. Degradado oscuro abajo para el texto
                   Align(
@@ -240,7 +240,7 @@ class BusGridCard extends StatelessWidget {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black.withOpacity(0.9),
+                            Colors.black.withValues(alpha: 0.9),
                           ],
                         ),
                       ),
@@ -296,12 +296,28 @@ class BusGridCard extends StatelessWidget {
                              ),
                            )
                         else
-                          Text(
-                            'Sin servicio',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Colors.white.withOpacity(0.4),
-                              fontStyle: FontStyle.italic,
+                          // Show frequency info instead of negative "No service" message
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.black45,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.white12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.access_time, size: 12, color: Colors.white70),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Frec: 10-15 min',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                       ],

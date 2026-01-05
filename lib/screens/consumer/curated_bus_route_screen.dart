@@ -154,17 +154,39 @@ class _CuratedBusRouteScreenState extends State<CuratedBusRouteScreen> {
       Polyline(
         polylineId: const PolylineId('bus_route'),
         points: _routeCoordinates,
-        color: Colors.blue,
-        width: 5,
-        patterns: [PatternItem.dot, PatternItem.gap(10)],
+        color: Colors.blue.shade700, // Azul más oscuro y visible
+        width: 6, // Más grueso
+        // ELIMINADO: patterns - ahora es línea sólida
       ),
     );
   }
 
-  /// Build markers with two-tier visual hierarchy
-  /// TIER 1: Recommended Stops (Destination) - Large, Green, Prominent
+  /// Build markers with three-tier visual hierarchy
+  /// TIER 0: Discovery Card Destination - Red, Most Prominent (NUEVO)
+  /// TIER 1: Recommended Stops (Bus Stop) - Green, Prominent
   /// TIER 2: Regular Stops (Context/Boarding) - Small, Subtle, Faded
   void _buildMarkers() {
+    // NUEVO: Agregar marcador del destino (Discovery Card)
+    if (widget.transportOption.destinationLat != null &&
+        widget.transportOption.destinationLng != null) {
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('discovery_destination'),
+          position: LatLng(
+            widget.transportOption.destinationLat!,
+            widget.transportOption.destinationLng!,
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueRed), // Rojo para destino final
+          zIndex: 15, // Más alto que todo
+          infoWindow: InfoWindow(
+            title: '📍 ${widget.transportOption.destinationName ?? "DESTINO"}',
+            snippet: 'Tu destino final',
+          ),
+        ),
+      );
+    }
+    
     for (int i = 0; i < _allStops.length; i++) {
       final stop = _allStops[i];
       final isRecommendedStop = widget.transportOption.recommendedStops.any(
@@ -227,11 +249,20 @@ class _CuratedBusRouteScreenState extends State<CuratedBusRouteScreen> {
     }
   }
 
-  /// Adjust camera to fit user location and recommended stops
+  /// Adjust camera to fit user location, destination, and recommended stops
   void _adjustCamera() {
     if (_mapController == null) return;
 
     final List<LatLng> pointsToFit = [];
+
+    // NUEVO: Add destination location (highest priority)
+    if (widget.transportOption.destinationLat != null &&
+        widget.transportOption.destinationLng != null) {
+      pointsToFit.add(LatLng(
+        widget.transportOption.destinationLat!,
+        widget.transportOption.destinationLng!,
+      ));
+    }
 
     // Add user location
     if (_userLocation != null) {
@@ -299,7 +330,7 @@ class _CuratedBusRouteScreenState extends State<CuratedBusRouteScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -324,7 +355,7 @@ class _CuratedBusRouteScreenState extends State<CuratedBusRouteScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -471,6 +502,17 @@ class _CuratedBusRouteScreenState extends State<CuratedBusRouteScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              // NUEVO: Destino final
+                              if (widget.transportOption.destinationLat != null &&
+                                  widget.transportOption.destinationLng != null)
+                                _buildLegendItem(
+                                  icon: Icons.place,
+                                  color: Colors.red,
+                                  label: 'Destino final',
+                                ),
+                              if (widget.transportOption.destinationLat != null &&
+                                  widget.transportOption.destinationLng != null)
+                                const SizedBox(height: 8),
                               _buildLegendItem(
                                 icon: Icons.flag_rounded,
                                 color: Colors.green,

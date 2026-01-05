@@ -5,8 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 final List<LatLng> culturaRoutes = [
   const LatLng(-13.521317532907313, -71.96651320899271), // Garcilaso
   const LatLng(-13.522359303212086, -71.9631560083819), // Amauta
-  const LatLng(-13.52347720169373,
-      -71.95948577846217), // Universidad San Antonnio de Abad
+  const LatLng(-13.52347720169373,-71.95948577846217), // Universidad San Antonnio de Abad
   const LatLng(-13.524473967615657, -71.95626285928323), // Hospital Regional
   const LatLng(-13.525736587902498, -71.95196221699389), // Manuel Prado
   const LatLng(-13.526705866234407, -71.94887952422619), // Magisterio

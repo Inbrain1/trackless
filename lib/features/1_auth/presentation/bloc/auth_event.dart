@@ -15,6 +15,9 @@ class SignInRequested extends AuthEvent {
   const SignInRequested(this.email, this.password);
 }
 
+// Evento para cuando se solicita ingreso como invitado
+class GuestLoginRequested extends AuthEvent {}
+
 // Evento para cuando se registra un usuario
 class SignUpRequested extends AuthEvent {
   final String email;

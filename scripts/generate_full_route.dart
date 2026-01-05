@@ -40,10 +40,10 @@ class RouteGenerator {
     print(
         '╚════════════════════════════════════════════════════════════════╝\n');
 
-    print('📥 Fetching buses from Firestore buses collection...');
-    final busesSnapshot = await firestore.collection('buses').get();
+    print('📥 Fetching routes from Firestore busRoutes collection...');
+    final busesSnapshot = await firestore.collection('busRoutes').get(); // FIX: Changed from buses to busRoutes
     final docs = busesSnapshot.docs;
-    print('👉 Found ${docs.length} buses in database.');
+    print('👉 Found ${docs.length} routes in database.');
 
     print('Auto-proceeding with route generation (BYPASS)...');
     print('\n🚀 Starting route generation...\n');
@@ -268,7 +268,7 @@ class RouteGenerator {
     return points;
   }
 
-  /// Save to Firestore, preserving existing stops data
+  /// Save to Firestore, ONLY updating 'route' field, NOT touching 'stops'
   Future<void> _saveToFirestore(String busName, List<LatLng> routePoints,
       List<LatLng> originalStops) async {
     // Convert to GeoPoint array
@@ -276,20 +276,14 @@ class RouteGenerator {
         .map((point) => GeoPoint(point.latitude, point.longitude))
         .toList();
 
-    final stopsGeoPoints = originalStops
-        .map((point) => {
-              'coordenada': GeoPoint(point.latitude, point.longitude),
-            })
-        .toList();
-
-    // Use merge to preserve existing fields like 'stops'
-    await firestore.collection('busRoutes').doc(busName).set({
+    // ❌ NO actualizar stops - solo route
+    // Use UPDATE instead of SET to preserve existing fields
+    await firestore.collection('busRoutes').doc(busName).update({
       'route': routeGeoPoints,
-      'stops': stopsGeoPoints,
       'routeUpdatedAt': FieldValue.serverTimestamp(),
       'routeSource': 'google_directions_api',
       'routePointsCount': routePoints.length,
-    }, SetOptions(merge: true));
+    });
   }
 
   List<LatLng> _parseStopsFromFirestore(Map<String, dynamic>? data) {

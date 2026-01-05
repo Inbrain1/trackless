@@ -24,11 +24,13 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
     required String role,
+    String name = 'Usuario', // Add name parameter
   }) async {
     final userModel = await remoteDataSource.register(
       email: email,
       password: password,
       role: role,
+      name: name, // Pass name
     );
     return userModel?.toEntity();
   }
@@ -41,6 +43,12 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<User?> getUserDetails(String uid) async {
     final userModel = await remoteDataSource.getUserDetails(uid);
+    return userModel?.toEntity();
+  }
+
+  @override
+  Future<User?> signInAnonymously() async {
+    final userModel = await remoteDataSource.signInAnonymously();
     return userModel?.toEntity();
   }
 }

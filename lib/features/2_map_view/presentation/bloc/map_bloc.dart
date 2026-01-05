@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:flutter/material.dart'; // NUEVO: Para Color
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart'; // NUEVO: Para Polyline, PolylineId, LatLng
 
 import 'package:untitled2/features/2_map_view/domain/repositories/map_repository.dart';
 import 'package:untitled2/features/2_map_view/domain/usecases/get_bus_route_details.dart';
@@ -122,7 +124,29 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         status: MapStatus.loading, selectedBusName: event.busName));
     try {
       final busRoute = await _getBusRouteDetails(event.busName);
-      emit(state.copyWith(selectedBusRoute: busRoute));
+      
+      // NUEVO: Crear polyline con las paradas de la ruta
+      final Set<Polyline> routePolylines = {};
+      if (busRoute.stops.isNotEmpty) {
+        final List<LatLng> routePoints = busRoute.stops
+            .map((stop) => stop.position) // FIX: BusStop tiene 'position' (LatLng), no latitude/longitude
+            .toList();
+        
+        final Polyline routeLine = Polyline(
+          polylineId: const PolylineId('route_line'),
+          points: routePoints,
+          color: const Color(0xFF007BFF), // Azul
+          width: 5,
+        );
+        
+        routePolylines.add(routeLine);
+      }
+      // FIN NUEVO
+      
+      emit(state.copyWith(
+        selectedBusRoute: busRoute,
+        polylines: routePolylines, // NUEVO: Emitir polylines
+      ));
 
       _busLocationsSubscription?.cancel();
       _busLocationsSubscription =

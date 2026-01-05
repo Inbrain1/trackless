@@ -38,7 +38,7 @@ class AccountModal extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(0.2),
+                      color: Colors.grey.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child:

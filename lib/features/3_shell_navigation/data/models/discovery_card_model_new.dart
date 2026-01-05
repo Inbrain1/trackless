@@ -18,6 +18,7 @@ class DiscoveryCardModel {
   final List<String> galleryImages;
   final String year;
   final bool isVerified;
+  final bool isVideo;
 
   // Location & Navigation
   final double? latitude;
@@ -40,6 +41,7 @@ class DiscoveryCardModel {
     this.galleryImages = const [],
     this.year = '2024',
     this.isVerified = false,
+    this.isVideo = false, // Default to false (image)
     this.latitude,
     this.longitude,
     this.busIds = const [],
@@ -65,6 +67,7 @@ class DiscoveryCardModel {
       galleryImages: List<String>.from(data['galleryImages'] ?? []),
       year: data['year'] ?? '2024',
       isVerified: data['isVerified'] ?? false,
+      isVideo: data['isVideo'] ?? false,
       latitude: data['latitude']?.toDouble(),
       longitude: data['longitude']?.toDouble(),
       busIds: List<String>.from(data['busIds'] ?? []),
@@ -96,6 +99,7 @@ class DiscoveryCardModel {
       'busIds': busIds,
       'transport_options':
           transportOptions.map((option) => option.toMap()).toList(),
+      'isVideo': isVideo,
     };
   }
 }

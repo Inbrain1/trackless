@@ -59,5 +59,11 @@
     <array>
       <string>_dartobservatory._tcp</string>
     </array>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>We need access to your photo library to pick images and videos for discovery cards.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>We need access to your camera to take photos and videos for discovery cards.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>We need access to your microphone to record videos with sound.</string>
 </dict>
 </plist>

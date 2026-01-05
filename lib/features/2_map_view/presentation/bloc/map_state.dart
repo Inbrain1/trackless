@@ -13,6 +13,7 @@ class MapState extends Equatable {
   final String? selectedBusName;
   final String errorMessage;
   final bool isTracking; // Para el conductor: ¿Está transmitiendo?
+  final Set<Polyline> polylines; // NUEVO: Líneas de ruta en el mapa
   final List<BusLocation>
       activeBuses; // Para el usuario: Lista de TODOS los buses activos
   final LatLng? focusedLocation; // For active navigation
@@ -25,6 +26,7 @@ class MapState extends Equatable {
     this.selectedBusName,
     this.errorMessage = '',
     this.isTracking = false,
+    this.polylines = const {}, // NUEVO: Inicializar vacío
     this.activeBuses = const [], // <-- VALOR INICIAL
     this.focusedLocation,
   });
@@ -37,6 +39,7 @@ class MapState extends Equatable {
     String? selectedBusName,
     String? errorMessage,
     bool? isTracking,
+    Set<Polyline>? polylines, // NUEVO: Parámetro para polylines
     List<BusLocation>? activeBuses, // <-- NUEVO
     LatLng? focusedLocation,
     bool clearSelectedBus = false,
@@ -51,6 +54,7 @@ class MapState extends Equatable {
           clearSelectedBus ? null : selectedBusName ?? this.selectedBusName,
       errorMessage: errorMessage ?? this.errorMessage,
       isTracking: isTracking ?? this.isTracking,
+      polylines: clearSelectedBus ? {} : polylines ?? this.polylines, // NUEVO: Limpiar polylines al deseleccionar
       activeBuses: activeBuses ?? this.activeBuses, // <-- NUEVO
       focusedLocation: focusedLocation ?? this.focusedLocation,
     );
@@ -65,6 +69,7 @@ class MapState extends Equatable {
         selectedBusName,
         errorMessage,
         isTracking,
+        polylines, // NUEVO: Incluir en comparación de estado
         activeBuses, // <-- NUEVO
         focusedLocation,
       ];

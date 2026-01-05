@@ -4,8 +4,14 @@ class UserModel {
   final String uid;
   final String email;
   final String role;
+  final String name; // Added name
 
-  UserModel({required this.uid, required this.email, required this.role});
+  UserModel({
+    required this.uid,
+    required this.email,
+    required this.role,
+    this.name = 'Usuario',
+  });
 
   // Factory para crear un UserModel desde un mapa de Firestore
   factory UserModel.fromFirestore(Map<String, dynamic> data, String uid) {
@@ -13,6 +19,7 @@ class UserModel {
       uid: uid,
       email: data['email'] ?? '',
       role: data['role'] ?? 'Usuario',
+      name: data['name'] ?? 'Usuario', // Map name from firestore
     );
   }
 
@@ -21,6 +28,7 @@ class UserModel {
     return {
       'email': email,
       'role': role,
+      'name': name, // Save name to firestore
     };
   }
 
@@ -31,6 +39,7 @@ class UserModel {
       uid: uid,
       email: email,
       role: role,
+      name: name, // Map name to entity
     );
   }
 }

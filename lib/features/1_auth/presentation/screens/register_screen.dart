@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:untitled2/core/ui/input_decorations.dart';
 import 'package:untitled2/features/1_auth/presentation/bloc/auth_bloc.dart';
 import 'package:untitled2/features/1_auth/presentation/bloc/auth_event.dart';
 import 'package:untitled2/features/1_auth/presentation/bloc/auth_state.dart';
-import 'package:untitled2/features/1_auth/presentation/widgets/auth_background.dart';
-import 'package:untitled2/features/1_auth/presentation/widgets/card_container.dart';
+import 'package:untitled2/features/1_auth/presentation/widgets/glowing_text_field.dart';
+import 'package:untitled2/features/1_auth/presentation/widgets/gradient_auth_button.dart';
+import 'package:untitled2/features/1_auth/presentation/widgets/university_auth_header.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -14,31 +14,34 @@ class RegisterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AuthBackground(
+      backgroundColor: const Color(0xFF121212), // Dark background
+      body: Center(
         child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 250),
-              CardContainer(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    Text('Crear cuenta', style: Theme.of(context).textTheme.headlineMedium),
-                    const SizedBox(height: 30),
-                    const _RegisterForm(),
-                  ],
+              const UniversityAuthHeader(),
+              const SizedBox(height: 30),
+              // Optional: Change header text or add subtitle for Register
+              const Text(
+                'REGISTRO',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 18,
+                  letterSpacing: 1.2,
                 ),
               ),
-              const SizedBox(height: 50),
+              const SizedBox(height: 30),
+              const _RegisterForm(),
+              const SizedBox(height: 30),
               TextButton(
                 onPressed: () => context.go('/login'),
-                style: ButtonStyle(
-                  overlayColor: WidgetStateProperty.all(Colors.indigo.withOpacity(0.1)),
-                  shape: WidgetStateProperty.all(const StadiumBorder()),
+                child: Text(
+                  'Already have an account? Login',
+                  style: TextStyle(color: Colors.grey[500]),
                 ),
-                child: const Text('¿Ya tienes una cuenta?', style: TextStyle(fontSize: 18, color: Colors.black87)),
               ),
-              const SizedBox(height: 50),
             ],
           ),
         ),
@@ -56,6 +59,7 @@ class _RegisterForm extends StatefulWidget {
 
 class _RegisterFormState extends State<_RegisterForm> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   String _selectedRole = 'Usuario';
@@ -63,6 +67,7 @@ class _RegisterFormState extends State<_RegisterForm> {
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -101,69 +106,50 @@ class _RegisterFormState extends State<_RegisterForm> {
         autovalidateMode: AutovalidateMode.onUserInteraction,
         child: Column(
           children: [
-            TextFormField(
+            GlowingTextField(
+              controller: _nameController,
+              hintText: 'Nombre Completo',
+              prefixIcon: Icons.person_outline,
+              validator: (value) {
+                return (value != null && value.isNotEmpty)
+                    ? null
+                    : 'Campo obligatorio';
+              },
+            ),
+            const SizedBox(height: 20),
+            GlowingTextField(
               controller: _emailController,
-              autocorrect: false,
+              hintText: 'Código Estudiante',
+              prefixIcon: Icons.badge_outlined,
               keyboardType: TextInputType.emailAddress,
-              decoration: InputDecorations.authInputDecoration(
-                hintText: 'john.doe@gmail.com',
-                labelText: 'Correo electrónico',
-                prefixIcon: Icons.alternate_email_rounded,
-              ),
               validator: (value) {
-                String pattern = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-                RegExp regExp = RegExp(pattern);
-                return regExp.hasMatch(value ?? '') ? null : 'El correo no es válido';
+                if (value == null || value.isEmpty) return 'El formato es incorrecto';
+                // Similar to login, relaxed check or strict email
+                return null;
               },
             ),
-            const SizedBox(height: 30),
-            TextFormField(
+            const SizedBox(height: 20),
+            GlowingTextField(
               controller: _passwordController,
-              autocorrect: false,
+              hintText: 'Contraseña',
+              prefixIcon: Icons.lock_outline,
               obscureText: true,
-              decoration: InputDecorations.authInputDecoration(
-                hintText: '*****',
-                labelText: 'Contraseña',
-                prefixIcon: Icons.lock_outline,
-              ),
+              // FIX: Added missing validator
               validator: (value) {
-                return (value != null && value.length >= 6) ? null : 'La contraseña debe tener al menos 6 caracteres';
-              },
-            ),
-            const SizedBox(height: 30),
-            DropdownButtonFormField<String>(
-              initialValue: _selectedRole,
-              decoration: InputDecorations.authInputDecoration(
-                labelText: 'Rol',
-                prefixIcon: Icons.person_outline, hintText: 'Seleciona tu rol',
-              ),
-              items: const [
-                DropdownMenuItem(value: 'Usuario', child: Text('Usuario')),
-                DropdownMenuItem(value: 'Conductor', child: Text('Conductor')),
-                DropdownMenuItem(value: 'Development', child: Text('Development')),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedRole = value;
-                  });
+                if (value == null || value.isEmpty) {
+                  return 'La contraseña es obligatoria';
                 }
+                if (value.length < 6) {
+                  return 'Mínimo 6 caracteres';
+                }
+                return null;
               },
-            ),
+            ), // FIX: Proper widget closing
             const SizedBox(height: 30),
-            MaterialButton(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              disabledColor: Colors.grey,
-              elevation: 0,
-              color: Colors.deepPurple,
+            // FIX: Replaced MaterialButton with GradientAuthButton for consistency
+            GradientAuthButton(
               onPressed: _isLoading ? null : _submit,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
-                child: Text(
-                  _isLoading ? 'Espere' : 'Registrar',
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
+              text: _isLoading ? 'Espere...' : 'Registrar',
             )
           ],
         ),

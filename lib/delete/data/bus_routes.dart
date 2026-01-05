@@ -1802,69 +1802,99 @@ route: [
       const LatLng(-13.541709955710608, -71.88353578656286), // Clorinda Matto de Turner
       const LatLng(-13.541601463107718, -71.88185452189158), // Sorama
       const LatLng(-13.541305362203751, -71.88006554914602), // Almudena
-    ],
+    ]
+    ,
+    Act as a Senior Backend Developer specialized in Firebase and Dart.
+
+CONTEXT:
+I have a file named `bus_stops.json` containing a clean list of bus stop objects.
+I need to upload this data to Cloud Firestore to populate a specific route.
+
+INPUT DATA STRUCTURE (bus_stops.json):
+[
+  {
+    "id": 1,
+    "name": "Luis Vallejo Santoni",
+    "lat": -13.544466,
+    "lng": -71.986992
+  },
+  ...
+]
+
+TASK:
+Write a standalone Dart script (not a Flutter app, just a console script) to upload this data.
+
+REQUIREMENTS:
+1. Initialize Firebase (assume I have my `firebase_options.dart` or service account ready, just show me where to put it).
+2. Read the `bus_stops.json` file from the disk.
+3. Target Firestore Path: collection `routes` -> document `cultura_route`.
+4. Action: Update the field `stops` with the entire array from the JSON file.
+5. Use `SetOptions(merge: true)` or `update()` to ensure we don't overwrite other fields in the document (like route color or name).
+6. Add error handling (try-catch) and print a success message confirming the number of stops uploaded.
+
+Output strictly the Dart code and a brief instruction on how to run it via terminal.
   ),
   Bus(
     name: 'Correcaminos',
     code: 'RTU-18',
     route:[
-      const LatLng(-13.519952324957687, -71.9934625234991), // Los Cipreses
-      const LatLng(-13.519417540925565, -71.99163187588634), // Colegio Simón Bolívar
-      const LatLng(-13.520645671505939, -71.99003032359545), // Cuesta Picchu
-      const LatLng(-13.520642382420794, -71.98790184454347), // Cruce
-      const LatLng(-13.51903340805543, -71.98679999634643), // Qheswa
-      const LatLng(-13.518491595521871, -71.98695557939872), // Petrocentro
-      const LatLng(-13.51695256430695, -71.98703936766695), // Ataneo
-      const LatLng(-13.516260517063014, -71.98693671398539), //Avenida Apurimac,595- acropata
-      const LatLng(-13.515859333030015, -71.98380075531524), //Esquina Arcopata
-      const LatLng(-13.516462186791044, -71.9831570813501), // Meloc
-      const LatLng(-13.51740969980007, -71.98254613528833), //Arones
-      const LatLng(-13.516260517063014, -71.98693671398539), //Avenida Apurimac,595- acropata
-      const LatLng(-13.515859333030015, -71.98380075531524), //Esquina Arcopata
-      const LatLng(-13.516462186791044, -71.9831570813501), // Meloc
-      const LatLng(-13.51740969980007, -71.98254613528833), //Arones
-      const LatLng(-13.517804983666027, -71.98309016222954), // Colegio San Francisco
-      const LatLng(-13.51840750065633, -71.98408068124347), // Unión
-      const LatLng(-13.520033173205292, -71.98241121664299), // Mercado San Pedro
-      const LatLng(-13.519672104340568, -71.98165947225577), // Condevidayoc
-      const LatLng(-13.520696572507838, -71.9809342592476), // Calle Cruz Verde
-      const LatLng(-13.521173825699405, -71.98026976280653), // Calle Nueva
-      const LatLng(-13.51948365181845, -71.97761927589094),  // Ayacucho
-      const LatLng(-13.519527881754883, -71.97648569498786), // El Sol
-      const LatLng(-13.520410531363503, -71.97670841673501), // Qoricancha
-      const LatLng(-13.522869891491233, -71.9746424978066), // Correo
-      const LatLng(-13.525752265081335, -71.97216209719083), // Estación Avenida Pardo
-      const LatLng(-13.52817326771042, -71.9707900124316), // Confraternidad
-      const LatLng(-13.529277345250904, -71.97017187189006), // Cruce Andina
-      const LatLng(-13.530603098638641, -71.9694211495448), // Parque Urpicha
-      const LatLng(-13.53128336687838, -71.96891870142359), // Óvalo Pachacuteq(bajada)
-      const LatLng(-13.532288425140855, -71.96740873704128), // Entrada a Terminal
-      const LatLng(-13.533240130931372, -71.96662279955476), // Hospedaje
-      const LatLng(-13.534723439660278, -71.963959601254), // El Molino
-      const LatLng(-13.535179069852408, -71.96126085076199), // Puente
-      const LatLng(-13.534911227534929, -71.96093748368892), // Unión
-      const LatLng(-13.535253090067648, -71.95867946892523), // Cuarto
-      const LatLng(-13.535691096302816, -71.95697061443421), // Quinto
-      const LatLng(-13.536063392660623, -71.95584766294358), // Coliseo Uriel Gacria
-      const LatLng(-13.537546293772747, -71.95106506570649), // Reloj
-      const LatLng(-13.538137959780059, -71.94858500008617), // Quiosco
-      const LatLng(-13.538945374360077, -71.94517213766076), // Aeropuerto Velasco Astete
-      const LatLng(-13.539107384113452, -71.94181935580576), // Hilario
-      const LatLng(-13.541528551476214, -71.9385143948445), // Chavín
-      const LatLng(-13.542259271002047, -71.9353141058617), // Entrada Mollecito
-      const LatLng(-13.542323829133053, -71.92695469379385), // Posta San Antonio
-      const LatLng(-13.541929877728448, -71.92418620814134), // Paradero Zetar
-      const LatLng(-13.541704735333663, -71.91754761280804), // Lorena
-      const LatLng(-13.54168148770346, -71.91552509532357), // Villa El Salvador
-      const LatLng(-13.541466408689194, -71.90918501584991), // Túpac Amaru
-      const LatLng(-13.541514321189172, -71.90635860107156), // Rosa Túpac Amaru
-      const LatLng(-13.545190323762919, -71.89926414563625), // Entrada Sucucalle
-      const LatLng(-13.546775738638745, -71.89677221324048), // Puente Huatanay
-      const LatLng(-13.547861788594028, -71.89506314734203), // Santa Elena
-      const LatLng(-13.549086375622288, -71.89288213564313), // Mercado de Frutas
-      const LatLng(-13.550740469304397, -71.88910851499215), // Villa El Sol
-      const LatLng(-13.552659068674258, -71.88446853085053), // Plaza Chimpahuaylla
-      const LatLng(-13.553581029196236, -71.8804579560037), // Vallecito
+        const LatLng(-13.519952324957687, -71.9934625234991), // Los Cipreses
+        const LatLng(-13.519417540925565, -71.99163187588634), // Colegio Simón Bolívar
+        const LatLng(-13.520645671505939, -71.99003032359545), // Cuesta Picchu
+        const LatLng(-13.520642382420794, -71.98790184454347), // Cruce
+        const LatLng(-13.51903340805543, -71.98679999634643), // Qheswa
+        const LatLng(-13.518491595521871, -71.98695557939872), // Petrocentro
+        const LatLng(-13.51695256430695, -71.98703936766695), // Ataneo
+        const LatLng(-13.516260517063014, -71.98693671398539), //Avenida Apurimac,595- acropata
+        const LatLng(-13.515859333030015, -71.98380075531524), //Esquina Arcopata
+        const LatLng(-13.516462186791044, -71.9831570813501), // Meloc
+        const LatLng(-13.51740969980007, -71.98254613528833), //Arones
+        const LatLng(-13.516260517063014, -71.98693671398539), //Avenida Apurimac,595- acropata
+        const LatLng(-13.515859333030015, -71.98380075531524), //Esquina Arcopata
+        const LatLng(-13.516462186791044, -71.9831570813501), // Meloc
+        const LatLng(-13.51740969980007, -71.98254613528833), //Arones
+        const LatLng(-13.517804983666027, -71.98309016222954), // Colegio San Francisco
+        const LatLng(-13.51840750065633, -71.98408068124347), // Unión
+        const LatLng(-13.520033173205292, -71.98241121664299), // Mercado San Pedro
+        const LatLng(-13.519672104340568, -71.98165947225577), // Condevidayoc
+        const LatLng(-13.520696572507838, -71.9809342592476), // Calle Cruz Verde
+        const LatLng(-13.521173825699405, -71.98026976280653), // Calle Nueva
+        const LatLng(-13.51948365181845, -71.97761927589094),  // Ayacucho
+        const LatLng(-13.519527881754883, -71.97648569498786), // El Sol
+        const LatLng(-13.520410531363503, -71.97670841673501), // Qoricancha
+        const LatLng(-13.522869891491233, -71.9746424978066), // Correo
+        const LatLng(-13.525752265081335, -71.97216209719083), // Estación Avenida Pardo
+        const LatLng(-13.52817326771042, -71.9707900124316), // Confraternidad
+        const LatLng(-13.529277345250904, -71.97017187189006), // Cruce Andina
+        const LatLng(-13.530603098638641, -71.9694211495448), // Parque Urpicha
+        const LatLng(-13.53128336687838, -71.96891870142359), // Óvalo Pachacuteq(bajada)
+        const LatLng(-13.532288425140855, -71.96740873704128), // Entrada a Terminal
+        const LatLng(-13.533240130931372, -71.96662279955476), // Hospedaje
+        const LatLng(-13.534723439660278, -71.963959601254), // El Molino
+        const LatLng(-13.535179069852408, -71.96126085076199), // Puente
+        const LatLng(-13.534911227534929, -71.96093748368892), // Unión
+        const LatLng(-13.535253090067648, -71.95867946892523), // Cuarto
+        const LatLng(-13.535691096302816, -71.95697061443421), // Quinto
+        const LatLng(-13.536063392660623, -71.95584766294358), // Coliseo Uriel Gacria
+        const LatLng(-13.537546293772747, -71.95106506570649), // Reloj
+        const LatLng(-13.538137959780059, -71.94858500008617), // Quiosco
+        const LatLng(-13.538945374360077, -71.94517213766076), // Aeropuerto Velasco Astete
+        const LatLng(-13.539107384113452, -71.94181935580576), // Hilario
+        const LatLng(-13.541528551476214, -71.9385143948445), // Chavín
+        const LatLng(-13.542259271002047, -71.9353141058617), // Entrada Mollecito
+        const LatLng(-13.542323829133053, -71.92695469379385), // Posta San Antonio
+        const LatLng(-13.541929877728448, -71.92418620814134), // Paradero Zetar
+        const LatLng(-13.541704735333663, -71.91754761280804), // Lorena
+        const LatLng(-13.54168148770346, -71.91552509532357), // Villa El Salvador
+        const LatLng(-13.541466408689194, -71.90918501584991), // Túpac Amaru
+        const LatLng(-13.541514321189172, -71.90635860107156), // Rosa Túpac Amaru
+        const LatLng(-13.545190323762919, -71.89926414563625), // Entrada Sucucalle
+        const LatLng(-13.546775738638745, -71.89677221324048), // Puente Huatanay
+        const LatLng(-13.547861788594028, -71.89506314734203), // Santa Elena
+        const LatLng(-13.549086375622288, -71.89288213564313), // Mercado de Frutas
+        const LatLng(-13.550740469304397, -71.88910851499215), // Villa El Sol
+        const LatLng(-13.552659068674258, -71.88446853085053), // Plaza Chimpahuaylla
+        const LatLng(-13.553581029196236, -71.8804579560037), // Vallecito
     ],
   ),
   Bus(

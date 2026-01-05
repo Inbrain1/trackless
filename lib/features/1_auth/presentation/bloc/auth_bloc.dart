@@ -1,9 +1,15 @@
 import 'dart:async';
+import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:untitled2/features/1_auth/domain/repositories/auth_repository.dart';
+import 'package:untitled2/features/1_auth/domain/entities/user.dart' as domain;
+import 'package:untitled2/features/1_auth/domain/entities/user.dart'; // Ensure direct import works for type checks if needed or verify alias usage.
+import '../../domain/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
+
+// Alias for domain User to avoid conflict with Firebase User if necessary
+typedef UserEntity = domain.User;
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
@@ -16,6 +22,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignInRequested>(_onSignInRequested);
     on<SignUpRequested>(_onSignUpRequested);
     on<SignOutRequested>(_onSignOutRequested);
+    on<GuestLoginRequested>(_onGuestLoginRequested); // Handler for guest login
 
     _authStateSubscription =
         _authRepository.authStateChanges.listen((firebaseUser) {
@@ -23,28 +30,52 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
   }
 
+  Future<void> _onGuestLoginRequested(
+      GuestLoginRequested event, Emitter<AuthState> emit) async {
+    emit(state.copyWith(status: AuthStatus.loading));
+    try {
+      await _authRepository.signInAnonymously();
+      // The state update happens in _onAuthStateChanged
+    } catch (e) {
+      emit(state.copyWith(
+          status: AuthStatus.unauthenticated,
+          message: 'Error al iniciar como invitado: $e'));
+    }
+  }
+
   // --- LÓGICA MEJORADA ---
   Future<void> _onAuthStateChanged(
       AuthStateChanged event, Emitter<AuthState> emit) async {
     final firebaseUser = event.user;
     if (firebaseUser != null) {
-      // Si hay un usuario de Firebase, vamos a Firestore a buscar sus detalles (incluido el rol).
-      final userDetails =
-          await _authRepository.getUserDetails(firebaseUser.uid);
-      if (userDetails != null) {
-        // Si encontramos los detalles, emitimos un estado autenticado CON el usuario completo.
+      if (firebaseUser.isAnonymous) {
+        // Handle Guest/Anonymous user
         emit(state.copyWith(
-            status: AuthStatus.authenticated, user: userDetails));
+          status: AuthStatus.authenticated,
+          user: const UserEntity(
+            uid: 'guest',
+            email: 'guest@trackless.com',
+            role: 'Guest',
+            name: 'Invitado'
+          ),
+          isGuest: true,
+        ));
       } else {
-        // Si no se encuentran detalles (caso raro), lo marcamos como no autenticado.
-        emit(state.copyWith(
-            status: AuthStatus.unauthenticated,
-            user: null,
-            message: 'No se encontraron detalles del usuario.'));
+        // Standard authenticated user
+        final userDetails =
+            await _authRepository.getUserDetails(firebaseUser.uid);
+        if (userDetails != null) {
+          emit(state.copyWith(
+              status: AuthStatus.authenticated, user: userDetails, isGuest: false));
+        } else {
+          emit(state.copyWith(
+              status: AuthStatus.unauthenticated,
+              user: null,
+              message: 'No se encontraron detalles del usuario.'));
+        }
       }
     } else {
-      // Si no hay usuario de Firebase, el estado es no autenticado.
-      emit(state.copyWith(status: AuthStatus.unauthenticated, user: null));
+      emit(state.copyWith(status: AuthStatus.unauthenticated, user: null, isGuest: false));
     }
   }
 

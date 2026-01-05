@@ -60,7 +60,7 @@ class _MainScreenState extends State<MainScreen> {
                 borderRadius: BorderRadius.circular(40),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.4),
+                    color: Colors.black.withValues(alpha: 0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -73,15 +73,15 @@ class _MainScreenState extends State<MainScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.black
-                          .withOpacity(0.5), // Semi-transparent black
+                          .withValues(alpha: 0.5), // Semi-transparent black
                       border: Border.all(
-                          color: Colors.white.withOpacity(0.12), width: 1.5),
+                          color: Colors.white.withValues(alpha: 0.12), width: 1.5),
                     ),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12.0, vertical: 12.0),
                     child: GNav(
-                      rippleColor: Colors.white.withOpacity(0.2),
-                      hoverColor: Colors.white.withOpacity(0.1),
+                      rippleColor: Colors.white.withValues(alpha: 0.2),
+                      hoverColor: Colors.white.withValues(alpha: 0.1),
                       gap: 5, // Reduced gap further
                       activeColor: Colors.white,
                       iconSize: 26,
@@ -93,8 +93,8 @@ class _MainScreenState extends State<MainScreen> {
                           horizontal: 8,
                           vertical: 12), // Reduced padding further to 8
                       duration: const Duration(milliseconds: 300),
-                      tabBackgroundColor: Colors.white.withOpacity(0.15),
-                      color: Colors.white.withOpacity(0.6),
+                      tabBackgroundColor: Colors.white.withValues(alpha: 0.15),
+                      color: Colors.white.withValues(alpha: 0.6),
                       tabs: const [
                         GButton(
                           icon: Icons.home_rounded,

@@ -19,6 +19,35 @@ class NearbyBusesScreen extends StatefulWidget {
 class _NearbyBusesScreenState extends State<NearbyBusesScreen> {
   final FirebaseFirestore _firestore = sl<FirebaseFirestore>();
   final Map<String, SelectedBusData> _selectedBuses = {};
+  
+  List<DocumentSnapshot> _buses = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchBuses();
+  }
+
+  Future<void> _fetchBuses() async {
+    try {
+      final snapshot = await _firestore.collection('buses').orderBy('mainName').get();
+      if (mounted) {
+        setState(() {
+          _buses = snapshot.docs;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Error al cargar buses: $e';
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   void _toggleBusSelection(String busId, String busName) {
     setState(() {
@@ -26,6 +55,23 @@ class _NearbyBusesScreenState extends State<NearbyBusesScreen> {
         _selectedBuses.remove(busId);
       } else {
         _selectedBuses[busId] = SelectedBusData(busId: busId, busName: busName);
+      }
+    });
+  }
+
+  void _toggleSelectAll() {
+    setState(() {
+      if (_selectedBuses.length == _buses.length) {
+        // Deselect all
+        _selectedBuses.clear();
+      } else {
+        // Select all
+        for (var doc in _buses) {
+          final data = doc.data() as Map<String, dynamic>;
+          final busId = doc.id;
+          final busName = data['mainName'] ?? 'Desconocido';
+          _selectedBuses[busId] = SelectedBusData(busId: busId, busName: busName);
+        }
       }
     });
   }
@@ -52,6 +98,8 @@ class _NearbyBusesScreenState extends State<NearbyBusesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final allSelected = _buses.isNotEmpty && _selectedBuses.length == _buses.length;
+
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
       appBar: AppBar(
@@ -62,59 +110,20 @@ class _NearbyBusesScreenState extends State<NearbyBusesScreen> {
         backgroundColor: const Color(0xFF1A1A1A),
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore.collection('buses').orderBy('mainName').snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error al cargar buses',
-                style: TextStyle(color: Colors.red.shade300),
+        actions: [
+          TextButton(
+            onPressed: _isLoading ? null : _toggleSelectAll,
+            child: Text(
+              allSelected ? 'Deseleccionar' : 'Seleccionar Todo',
+              style: TextStyle(
+                color: _isLoading ? Colors.white30 : Colors.amber, 
+                fontWeight: FontWeight.bold
               ),
-            );
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            );
-          }
-
-          final buses = snapshot.data!.docs;
-
-          if (buses.isEmpty) {
-            return const Center(
-              child: Text(
-                'No hay buses disponibles',
-                style: TextStyle(color: Colors.white70),
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: buses.length,
-            itemBuilder: (context, index) {
-              final doc = buses[index];
-              final data = doc.data() as Map<String, dynamic>;
-              final busId = doc.id;
-              final busName = data['mainName'] ?? 'Desconocido';
-              final stops = data['stops'] as List<dynamic>?;
-              final stopCount = stops?.length ?? 0;
-
-              final isSelected = _selectedBuses.containsKey(busId);
-
-              return _buildBusCard(
-                busId: busId,
-                busName: busName,
-                stopCount: stopCount,
-                isSelected: isSelected,
-              );
-            },
-          );
-        },
+            ),
+          )
+        ],
       ),
+      body: _buildBody(),
       floatingActionButton: _selectedBuses.isNotEmpty
           ? FloatingActionButton.extended(
               onPressed: _proceedToWizard,
@@ -132,6 +141,54 @@ class _NearbyBusesScreenState extends State<NearbyBusesScreen> {
     );
   }
 
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
+    }
+
+    if (_errorMessage.isNotEmpty) {
+      return Center(
+        child: Text(
+          _errorMessage,
+          style: TextStyle(color: Colors.red.shade300),
+        ),
+      );
+    }
+
+    if (_buses.isEmpty) {
+      return const Center(
+        child: Text(
+          'No hay buses disponibles',
+          style: TextStyle(color: Colors.white70),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _buses.length,
+      itemBuilder: (context, index) {
+        final doc = _buses[index];
+        final data = doc.data() as Map<String, dynamic>;
+        final busId = doc.id;
+        final busName = data['mainName'] ?? 'Desconocido';
+        final stops = data['stops'] as List<dynamic>?;
+        final stopCount = stops?.length ?? 0;
+
+        final isSelected = _selectedBuses.containsKey(busId);
+
+        return _buildBusCard(
+          busId: busId,
+          busName: busName,
+          stopCount: stopCount,
+          isSelected: isSelected,
+        );
+      },
+    );
+  }
+
   Widget _buildBusCard({
     required String busId,
     required String busName,
@@ -142,7 +199,7 @@ class _NearbyBusesScreenState extends State<NearbyBusesScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isSelected
-            ? const Color(0xFF007BFF).withOpacity(0.15)
+            ? const Color(0xFF007BFF).withValues(alpha: 0.15)
             : const Color(0xFF2C2C2C),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(

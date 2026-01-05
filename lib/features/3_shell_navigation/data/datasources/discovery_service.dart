@@ -22,6 +22,16 @@ class DiscoveryService {
     await _firestore.collection('discovery_cards').add(card.toFirestore());
   }
 
+  Future<void> updateDiscoveryCard(DiscoveryCardModel card) async {
+    if (card.id == null) {
+      throw Exception('Cannot update card without an ID');
+    }
+    await _firestore
+        .collection('discovery_cards')
+        .doc(card.id)
+        .set(card.toFirestore(), SetOptions(merge: true));
+  }
+
   Future<void> deleteDiscoveryCard(String id) async {
     await _firestore.collection('discovery_cards').doc(id).delete();
   }

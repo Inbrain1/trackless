@@ -8,11 +8,17 @@ import 'package:untitled2/screens/consumer/curated_bus_route_screen.dart';
 class TransportOptionsScreen extends StatelessWidget {
   final List<TransportOption> transportOptions;
   final String discoveryCardTitle;
+  final String? destinationName; // NUEVO
+  final double? destinationLat;  // NUEVO
+  final double? destinationLng;  // NUEVO
 
   const TransportOptionsScreen({
     Key? key,
     required this.transportOptions,
     required this.discoveryCardTitle,
+    this.destinationName, // NUEVO
+    this.destinationLat,  // NUEVO
+    this.destinationLng,  // NUEVO
   }) : super(key: key);
 
   @override
@@ -92,11 +98,21 @@ class TransportOptionsScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 16),
       child: InkWell(
         onTap: () {
+          // Crear TransportOption con ubicación del destino
+          final optionWithDestination = TransportOption(
+            busId: option.busId,
+            busName: option.busName,
+            recommendedStops: option.recommendedStops,
+            destinationName: destinationName, // NUEVO: Pasar destino
+            destinationLat: destinationLat,   // NUEVO
+            destinationLng: destinationLng,   // NUEVO
+          );
+          
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => CuratedBusRouteScreen(
-                transportOption: option,
+                transportOption: optionWithDestination,
               ),
             ),
           );
@@ -108,7 +124,7 @@ class TransportOptionsScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -168,7 +184,7 @@ class TransportOptionsScreen extends StatelessWidget {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.7),
+                              Colors.black.withValues(alpha: 0.7),
                             ],
                           ),
                         ),
